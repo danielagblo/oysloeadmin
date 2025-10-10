@@ -1,68 +1,117 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+/* -------------------------------
+   GLOBAL RESETS + VARIABLES
+--------------------------------- */
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
+/* 1. Box sizing & default reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  padding: 0;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* 2. Font + background setup */
+html,
+body {
+  height: 100%;
+  font-family: "Inter", system-ui, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-button {
+/* 3. Root variables (Dark mode baseline) */
+:root {
+  /* Colors */
+  --color-bg: #ededed; /* deep slate */
+  --color-bg-secondary: #f9f9f9;
+  --color-surface: #273449;
+  --color-primary: #3b82f6; /* bright blue */
+  --color-primary-hover: #60a5fa;
+  --color-text: #374957;
+  --color-muted: rgba(55, 73, 87, 0.54);
+  --color-border: #374957;
+  --color-success: #22c55e;
+  --color-warning: #facc15;
+  --color-error: #ef4444;
+  --color-green: #74ffa7;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-ml: 12px;
+  --radius-lg: 20px;
+  --radius-full: 100%;
+
+  /* Utils */
+  --sidebar-width: 100px;
+  --header-height: 100px;
+  --content-padding: 10px;
+}
+
+/* 4. Scrollbar (optional for dashboard look) */
+::-webkit-scrollbar {
+  width: 8px;
+  background-color: var(--color-bg);
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-surface);
   border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+/* -------------------------------
+   ELEMENT RESET / BASE STYLES
+--------------------------------- */
+
+/* Links */
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  cursor: pointer;
+}
+
+/* Buttons */
+button {
+  all: unset;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Lists */
+ul,
+ol {
+  list-style: none;
+}
+
+/* Inputs */
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  padding: var(--space-sm) var(--space-md);
+  outline: none;
+}
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--color-primary);
+}
+
+/* Containers / utility */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-md);
 }

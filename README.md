@@ -11,7 +11,7 @@
              (max-width: 1023px) 80vw,
              60vw"
       alt="Oysloe (Admin) Preview”"
-      style="width:100%; height:auto;" 
+      style="width:100%; height:auto;"
     />
   </a>
 </p>

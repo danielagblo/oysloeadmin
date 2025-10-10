@@ -1,0 +1,45 @@
+.sidebarContainer,
+.links,
+.logset,
+.link,
+.active {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.sidebarContainer {
+  width: var(--sidebar-width);
+  height: 100vh;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column;
+  background-color: var(--color-bg-secondary);
+  position: fixed;
+  left: 0;
+  z-index: 10;
+}
+
+.links,
+.logset {
+  width: 100%;
+}
+
+.link,
+.active {
+  padding: 10px;
+  scale: 0.9;
+  width: 100%;
+  border-radius: var(--radius-ml);
+}
+
+.link p {
+  font-size: 0.9rem;
+}
+
+.link:hover,
+.active {
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}

@@ -1,0 +1,90 @@
+import React from "react";
+import styles from "./sidebar.module.css";
+import { Categories } from "../SVGIcons/Categories";
+import { Support } from "../SVGIcons/Support";
+import { Logout } from "../SVGIcons/Logout";
+import { Dashboard } from "../SVGIcons/Dashboard";
+import { Settings } from "../SVGIcons/Settings";
+import Ads from "../../assets/Ads.png";
+import Alerts from "../../assets/Alerts.png";
+import Applications from "../../assets/Applications.png";
+import Order from "../../assets/Order.png";
+import Users from "../../assets/Users.png";
+import ImageIcon from "../SVGIcons/ImageIcon";
+import { NavLink } from "react-router-dom";
+
+export const SideBar = () => {
+  const links = [
+    {
+      page: "Dashboard",
+      link: "/",
+      icon: () => <Dashboard size={25} />,
+    },
+    {
+      page: "Ads",
+      link: "/ads",
+      icon: () => <ImageIcon src={Ads} size={25} alt="Ads Icon" />,
+    },
+    {
+      page: "Orders",
+      link: "/orders",
+      icon: () => <ImageIcon src={Order} size={25} alt="Ads Icon" />,
+    },
+    {
+      page: "Users",
+      link: "/users",
+      icon: () => <ImageIcon src={Users} size={25} alt="Ads Icon" />,
+    },
+    {
+      page: "Support",
+      link: "/support",
+      icon: () => <Support size={25} />,
+    },
+    {
+      page: "Alerts",
+      link: "/alerts",
+      icon: () => <ImageIcon src={Alerts} size={25} alt="Ads Icon" />,
+    },
+    {
+      page: "Categories",
+      link: "/categories",
+      icon: () => <Categories size={25} />,
+    },
+    {
+      page: "Applicatons",
+      link: "/applications",
+      icon: () => <ImageIcon src={Applications} size={25} alt="Ads Icon" />,
+    },
+  ];
+  return (
+    <div className={styles.sidebarContainer}>
+      <div className={styles.links}>
+        {links?.map((link, i) => (
+          <NavLink
+            key={i}
+            to={link?.link}
+            className={({ isActive }) =>
+              isActive ? styles.active : styles.link
+            }
+          >
+            {link?.icon()}
+            <p>{link?.page}</p>
+          </NavLink>
+        ))}
+      </div>
+      <div className={styles.logset}>
+        <NavLink
+          to="/settings"
+          className={({ isActive }) => (isActive ? styles.active : styles.link)}
+        >
+          <Settings size={25} />
+          <p>Settings</p>
+        </NavLink>
+        <button className={styles.link}>
+          <Logout size={25} />
+          <p>Logout</p>
+        </button>
+      </div>
+    </div>
+  );
+};
