@@ -10,7 +10,7 @@
       sizes="(max-width: 767px) 100vw,
              (max-width: 1023px) 80vw,
              60vw"
-      alt="SeekBeat Preview”"
+      alt="Oysloe (Admin) Preview”"
       style="width:100%; height:auto;"
     />
   </a>
