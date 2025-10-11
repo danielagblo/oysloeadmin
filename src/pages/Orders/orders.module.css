@@ -30,6 +30,7 @@ h2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
 }
 
 .lower {
@@ -74,6 +75,11 @@ h2 {
   text-align: right;
   width: 100%;
   margin-bottom: 1.5rem;
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
 }
 
 .recentOrders {
@@ -189,6 +195,95 @@ h2 {
 }
 
 .cardName {
-  /* border: 2px solid red; */
   width: 100%;
+}
+
+.popup {
+  border: 2px solid var(--color-muted);
+  border-radius: var(--radius-ml);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: fit-content;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 100;
+  background-color: var(--color-bg);
+  padding: var(--content-padding);
+  gap: 1rem;
+}
+
+.editModal {
+  position: absolute;
+  background-color: var(--color-bg-secondary);
+  padding: var(--content-padding);
+  box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.1);
+  top: 70%;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  /* border: 2px solid red; */
+  width: 80%;
+  z-index: 100;
+  padding-top: 2rem;
+  border-radius: var(--radius-ml);
+}
+
+.firstFields,
+.lastFields {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.firstFields > input:first-child {
+  width: 70%;
+}
+
+.firstFields > input:last-child {
+  width: 30%;
+}
+
+.editModal > input {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.lastFields > label {
+  gap: 10px;
+  display: flex;
+  flex-direction: column;
+}
+.lastFields > label > input {
+  width: 100%;
+}
+
+.lastFields > label:first-child {
+  width: 100%;
+}
+
+.lastFields > label:last-child {
+  width: 100%;
+}
+
+.editModal > button {
+  background-color: var(--color-theme-green);
+  width: calc(100% - (2 * var(--content-padding)));
+  text-align: center;
+  padding: var(--content-padding);
+  border-radius: var(--radius-md);
+}
+
+input {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-muted);
+  padding: var(--content-padding);
+  border-radius: var(--radius-md);
 }

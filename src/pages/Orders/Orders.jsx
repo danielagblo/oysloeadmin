@@ -3,17 +3,17 @@ import styles from "./orders.module.css";
 import { CheckMark } from "../../components/SVGIcons/CheckMark";
 import { EditIcon } from "../../components/SVGIcons/EditIcon";
 import { orderPageInfo } from "../../api/orders";
+import { Caret } from "../../components/SVGIcons/Caret";
 
 export const Orders = () => {
   const [currentOption, setCurrentOption] = useState(orderPageInfo?.periods[1]);
+  const [openDropDown, setOpenDropDown] = useState(false);
+  const [openModal, setOpenModal] = useState(-1);
 
   const tiers = orderPageInfo?.subscription;
   const data = orderPageInfo?.dataCards;
   const recents = orderPageInfo?.recentOrders;
 
-  // const tiers = [1, 2, 3];
-  // const data = [1, 2, 3, 4, 5];
-  // const recents = [1, 2, 3, 4, 5, 6];
   return (
     <div className={styles.ordersContainer}>
       <div className={styles.subscriptionTiers}>
@@ -43,9 +43,36 @@ export const Orders = () => {
                   </h2>
                 </div>
               </div>
-              <button className={styles.editicon}>
+              <button
+                className={styles.editicon}
+                onClick={() => setOpenModal((prev) => (prev === i ? -1 : i))}
+              >
                 <EditIcon size={25} />
               </button>
+              {openModal === i && (
+                <form className={styles.editModal}>
+                  <span className={styles.firstFields}>
+                    <input type="text" placeholder={tier?.name.split(" ")[0]} />
+                    <input type="text" placeholder={tier?.name.split(" ")[2]} />
+                  </span>
+                  <input type="text" placeholder="Feature" />
+                  <input type="text" placeholder="Feature" />
+                  <span className={styles.lastFields}>
+                    <label>
+                      New Price
+                      <input type="text" />
+                    </label>{" "}
+                    <label>
+                      Old Price
+                      <input
+                        type="text"
+                        style={{ textDecoration: "line-through" }}
+                      />
+                    </label>
+                  </span>
+                  <button>Apply</button>
+                </form>
+              )}
             </div>
           ))}
       </div>
@@ -58,8 +85,9 @@ export const Orders = () => {
                 {(card[i === 0 ? currentOption : orderPageInfo?.periods[0]]
                   ?.title ||
                   i < 2) && (
-                  <div
+                  <button
                     className={styles.dropDown}
+                    onClick={() => setOpenDropDown((prev) => !prev)}
                     style={{
                       opacity:
                         card[
@@ -73,7 +101,24 @@ export const Orders = () => {
                       card[i === 0 ? currentOption : orderPageInfo?.periods[0]]
                         ?.title
                     }
-                  </div>
+                    <p style={{ rotate: openDropDown ? "180deg" : "0deg" }}>
+                      <Caret size={25} />
+                    </p>
+                    {openDropDown && (
+                      <div className={styles.popup}>
+                        {orderPageInfo?.periods?.map((period, idx) =>
+                          idx !== 0 ? (
+                            <button
+                              onClick={() => setCurrentOption(period)}
+                              key={idx}
+                            >
+                              {card[period]?.title}
+                            </button>
+                          ) : null
+                        )}
+                      </div>
+                    )}
+                  </button>
                 )}
                 <div className={styles.items}>
                   {card[i === 0 ? currentOption : orderPageInfo?.periods[0]]
