@@ -1,15 +1,16 @@
 .dashboardContainer {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--content-padding);
   align-items: flex-start;
+  padding: var(--content-padding);
 }
 
 .gridBox {
   background-color: var(--color-bg-secondary);
   padding: 1rem 20px;
   border-radius: var(--radius-md);
-  display: inline-block; /* let it shrink-wrap content */
+  display: inline-block;
   vertical-align: top;
   justify-self: start;
   flex: 0 0 auto;
@@ -26,6 +27,10 @@
   justify-content: space-between;
   align-items: center;
   gap: 5rem;
+}
+
+.box > div > p {
+  font-size: 0.8rem;
 }
 
 h1 {

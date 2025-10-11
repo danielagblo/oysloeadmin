@@ -1,0 +1,194 @@
+.ordersContainer {
+  padding-bottom: 1rem;
+}
+
+.subscriptionTiers,
+.lower {
+  display: flex;
+  gap: 1rem;
+}
+
+.subscriptionTiers {
+  width: calc(100% + 2 * var(--content-padding));
+  background-color: var(--color-bg-secondary);
+  padding: var(--content-padding);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 2rem;
+}
+
+h2 {
+  font-weight: 500;
+}
+
+.tiers {
+  border: 1px solid var(--color-text);
+  border-radius: var(--radius-ml);
+  width: 100%;
+  padding: var(--content-padding);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lower {
+  padding: var(--content-padding);
+  padding-right: 0;
+  width: 100%;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.dataCards {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+  align-items: start;
+  width: 100%;
+}
+
+.dataCards > .data:nth-child(1),
+.dataCards > .data:nth-child(2) {
+  grid-column: span 3;
+}
+
+.dataCards > .data:nth-child(n + 3) {
+  grid-column: span 2;
+}
+
+.data {
+  border-radius: var(--radius-lg);
+  background-color: var(--color-bg-secondary);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  min-height: 80px; /* keeps cards looking consistent */
+}
+
+.dropDown {
+  text-align: right;
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.recentOrders {
+  width: 40%;
+  padding: var(--content-padding);
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-direction: column;
+}
+
+.timelineLine {
+  height: 90%;
+  width: 6px;
+  border-radius: var(--radius-ml);
+  background-color: var(--color-muted);
+  position: absolute;
+  left: calc(var(--content-padding) * 2.55555555);
+  top: calc(var(--content-padding) * 6);
+}
+
+.recents {
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.recentsNumber {
+  padding: var(--content-padding);
+  background-color: var(--color-bg);
+  border-radius: var(--radius-full);
+  width: 35px;
+  height: 35px;
+  display: grid;
+  place-content: center;
+}
+
+.recentOrders > h2 {
+  margin-bottom: calc(var(--content-padding) * 2.5);
+}
+
+.timeNameBox > h2 {
+  font-weight: normal;
+}
+
+.timeNameBox p {
+  color: var(--color-muted);
+}
+
+.prices {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: fit-content;
+  gap: 1rem;
+}
+
+.editicon {
+  margin: 10px;
+  padding: 10px;
+  background-color: rgba(55, 73, 87, 0.05);
+  height: fit-content;
+  width: fit-content;
+  border-radius: var(--radius-full);
+}
+
+.actualPrice {
+  color: var(--color-muted);
+  text-decoration: line-through;
+}
+
+.items,
+.item,
+.titleWrapAround {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.items {
+  width: 100%;
+  gap: 7.5rem;
+}
+
+.item {
+  gap: 2rem;
+}
+
+.change {
+  padding: 3px 10px;
+  border-radius: var(--radius-lg);
+  scale: 0.7;
+}
+.detailsBox {
+  width: 100%;
+}
+
+.detailsBox > p:first-child {
+  font-size: 1.1rem;
+  width: 100%;
+}
+
+.detailsBox > p:last-child {
+  font-size: 0.8rem;
+}
+
+.titleWrapAround {
+  flex-direction: column;
+}
+
+.cardName {
+  /* border: 2px solid red; */
+  width: 100%;
+}
