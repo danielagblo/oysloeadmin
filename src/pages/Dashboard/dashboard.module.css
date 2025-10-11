@@ -1,0 +1,49 @@
+.dashboardContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.gridBox {
+  background-color: var(--color-bg-secondary);
+  padding: 1rem 20px;
+  border-radius: var(--radius-md);
+  display: inline-block; /* let it shrink-wrap content */
+  vertical-align: top;
+  justify-self: start;
+  flex: 0 0 auto;
+}
+
+.title {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 5rem;
+}
+
+h1 {
+  font-weight: 500;
+}
+
+.change {
+  padding: 3px 10px;
+  border-radius: var(--radius-lg);
+  scale: 0.7;
+}
+
+.gcard {
+  display: flex; /* horizontal layout */
+  gap: 2rem; /* spacing between stats */
+  align-items: center;
+}
+
+.gcard p {
+  text-wrap: nowrap;
+}
