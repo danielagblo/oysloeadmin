@@ -200,6 +200,10 @@ input {
   gap: var(--content-padding);
 }
 
+.dropdown p {
+  text-transform: capitalize;
+}
+
 .dropdown button {
   /* padding: 5px; */
   border-radius: var(--radius-full);
