@@ -39,6 +39,8 @@ body {
   --color-error: #ef4444;
   --color-green: #74ffa7;
   --color-theme-green: #74ffa7;
+  --color-theme-blue: #00fff2;
+  --color-theme-red: #ff6b6b;
 
   /* Radius */
   --radius-sm: 4px;

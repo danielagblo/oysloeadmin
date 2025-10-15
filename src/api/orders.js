@@ -51,7 +51,7 @@ export const orderPageInfo = {
     {
       img: "https://randomuser.me/api/portraits/women/4.jpg",
       name: "Owusu Lisa",
-      buisnessName: "Brack Studios",
+      buisnessName: "Black Studios",
       subscription: "Platinum",
       timeAgo: 2,
       ads: { active: 900000, taken: 900, pending: 90 },
