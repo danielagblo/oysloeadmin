@@ -31,65 +31,58 @@ export const orderPageInfo = {
   periods: ["all", "today", "week", "month", "yesterday"],
   dataCards: [
     {
-      today: {
-        title: "Today",
-        data: [
-          { name: "Total Sales", value: "₵12.6k", change: null },
-          { name: "Volume", value: "12.6k", change: "1.1%" },
-        ],
-      },
-      week: {
-        title: "This Week",
-        data: [
-          { name: "Total Sales", value: "₵12.6k", change: null },
-          { name: "Volume", value: "12.6k", change: "1.1%" },
-        ],
-      },
-      month: {
-        title: "This Month",
-        data: [
-          { name: "Total Sales", value: "₵12.6k", change: null },
-          { name: "Volume", value: "12.6k", change: "1.1%" },
-        ],
-      },
-      yesterday: {
-        title: "Yesterday",
-        data: [
-          { name: "Total Sales", value: "₵12.6k", change: null },
-          { name: "Volume", value: "12.6k", change: "1.1%" },
-        ],
-      },
+      img: "https://randomuser.me/api/portraits/men/2.jpg",
+      name: "Dr. Manhatten",
+      buisnessName: "Brack Studios",
+      subscription: "Platinum",
+      timeAgo: 2,
+      ads: { active: 900000, taken: 900, pending: 90 },
+      buisnesses: { platinum: 90000, buisness: 90000, basic: 90000 },
     },
     {
-      all: {
-        title: "--",
-        data: [
-          { name: "Subscribers", value: "126", change: null },
-          { name: "Active", value: "12k", change: "1.1%" },
-        ],
-        period: null,
-      },
+      img: "https://randomuser.me/api/portraits/men/3.jpg",
+      name: "Dr. Manhatten",
+      buisnessName: "Brack Studios",
+      subscription: "Platinum",
+      timeAgo: 2,
+      ads: { active: 900000, taken: 900, pending: 90 },
+      buisnesses: { platinum: 90000, buisness: 90000, basic: 90000 },
     },
     {
-      all: {
-        title: "",
-        data: [{ name: "Total Premium", value: "₵12.6k", change: "1.1%" }],
-        period: "6 months",
-      },
+      img: "https://randomuser.me/api/portraits/women/4.jpg",
+      name: "Owusu Lisa",
+      buisnessName: "Brack Studios",
+      subscription: "Platinum",
+      timeAgo: 2,
+      ads: { active: 900000, taken: 900, pending: 90 },
+      buisnesses: { platinum: 90000, buisness: 90000, basic: 90000 },
     },
     {
-      all: {
-        title: "",
-        data: [{ name: "Active Buisness", value: "₵12.6k", change: "1.1%" }],
-        period: "6 months",
-      },
+      img: "https://randomuser.me/api/portraits/men/6.jpg",
+      name: "Dr. Manhatten",
+      buisnessName: "Brack Studios",
+      subscription: "Platinum",
+      timeAgo: 2,
+      ads: { active: 900000, taken: 900, pending: 90 },
+      buisnesses: { platinum: 90000, buisness: 90000, basic: 90000 },
     },
     {
-      all: {
-        title: "",
-        data: [{ name: "Active Basic", value: "₵12.6k", change: "1.1%" }],
-        period: "6 months",
-      },
+      img: "https://randomuser.me/api/portraits/women/1.jpg",
+      name: "Dr. Manhatten",
+      buisnessName: "Brack Studios",
+      subscription: "Platinum",
+      timeAgo: 2,
+      ads: { active: 900000, taken: 900, pending: 90 },
+      buisnesses: { platinum: 90000, buisness: 90000, basic: 90000 },
+    },
+    {
+      img: "https://randomuser.me/api/portraits/women/2.jpg",
+      name: "Kofi Kinatta",
+      buisnessName: "Brack Studios",
+      subscription: "Platinum",
+      timeAgo: 2,
+      ads: { active: 900000, taken: 900, pending: 90 },
+      buisnesses: { platinum: 90000, buisness: 90000, basic: 90000 },
     },
   ],
   recentOrders: [

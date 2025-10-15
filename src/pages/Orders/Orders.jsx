@@ -4,16 +4,20 @@ import { CheckMark } from "../../components/SVGIcons/CheckMark";
 import { EditIcon } from "../../components/SVGIcons/EditIcon";
 import { orderPageInfo } from "../../api/orders";
 import { Caret } from "../../components/SVGIcons/Caret";
+import { SearchIcon } from "../../components/SVGIcons/SearchIcon";
 
 export const Orders = () => {
   const [currentOption, setCurrentOption] = useState(orderPageInfo?.periods[1]);
   const [openDropDown, setOpenDropDown] = useState(false);
   const [openModal, setOpenModal] = useState(-1);
+  const [openPromo, setOpenPromo] = useState(false);
+  const [openTime, setOpenTime] = useState(false);
 
   const tiers = orderPageInfo?.subscription;
   const data = orderPageInfo?.dataCards;
   const recents = orderPageInfo?.recentOrders;
-
+  const [rowData, setRowData] = useState(data[0]);
+  console.log(rowData);
   return (
     <div className={styles.ordersContainer}>
       <div className={styles.subscriptionTiers}>
@@ -60,12 +64,12 @@ export const Orders = () => {
                   <span className={styles.lastFields}>
                     <label>
                       New Price
-                      <input type="text" />
+                      <input type="number" />
                     </label>{" "}
                     <label>
                       Old Price
                       <input
-                        type="text"
+                        type="number"
                         style={{ textDecoration: "line-through" }}
                       />
                     </label>
@@ -77,102 +81,65 @@ export const Orders = () => {
           ))}
       </div>
       <div className={styles.lower}>
-        <div className={styles.dataCards}>
-          {data &&
-            data.length &&
-            data.map((card, i) => (
-              <div key={i} className={styles.data}>
-                {(card[i === 0 ? currentOption : orderPageInfo?.periods[0]]
-                  ?.title ||
-                  i < 2) && (
-                  <button
-                    className={styles.dropDown}
-                    onClick={() => setOpenDropDown((prev) => !prev)}
-                    style={{
-                      opacity:
-                        card[
-                          i === 0 ? currentOption : orderPageInfo?.periods[0]
-                        ]?.title === "--"
-                          ? 0
-                          : 1,
-                    }}
-                  >
-                    {
-                      card[i === 0 ? currentOption : orderPageInfo?.periods[0]]
-                        ?.title
-                    }
-                    <p style={{ rotate: openDropDown ? "180deg" : "0deg" }}>
-                      <Caret size={25} />
-                    </p>
-                    {openDropDown && (
-                      <div className={styles.popup}>
-                        {orderPageInfo?.periods?.map((period, idx) =>
-                          idx !== 0 ? (
-                            <button
-                              onClick={() => setCurrentOption(period)}
-                              key={idx}
-                            >
-                              {card[period]?.title}
-                            </button>
-                          ) : null
-                        )}
-                      </div>
-                    )}
-                  </button>
-                )}
-                <div className={styles.items}>
-                  {card[i === 0 ? currentOption : orderPageInfo?.periods[0]]
-                    ?.data &&
-                    card[
-                      i === 0 ? currentOption : orderPageInfo?.periods[0]
-                    ]?.data?.map((data, idx) => (
-                      <div className={styles.titleWrapAround}>
-                        <p className={styles.cardName}>{data?.name}</p>
-                        <div key={idx} className={styles.item}>
-                          <div className={styles.detailsBox}>
-                            <h2>{data?.value}</h2>
-                            <p>
-                              {
-                                card[
-                                  i === 0
-                                    ? currentOption
-                                    : orderPageInfo?.periods[0]
-                                ]?.period
-                              }
-                            </p>
-                          </div>
-                          {data?.change && (
-                            <div
-                              style={{
-                                backgroundColor:
-                                  idx !== idx ? "#F7CF94" : "#74FFA7",
-                              }}
-                              className={styles.change}
-                            >
-                              {data?.change}
-                            </div>
-                          )}
-                        </div>
-                      </div>
+        <div className={styles.tables}>
+          <div className={styles.header}>
+            <div className={styles.dropbox}>
+              <button className={styles.dropdown} s>
+                <p>Promo</p>
+                <button onClick={() => setOpenPromo((prev) => !prev)}>
+                  <Caret />
+                </button>
+              </button>
+              {openPromo && (
+                <ul className={styles.dropdownitems}>
+                  {orderPageInfo?.subscription &&
+                    orderPageInfo?.subscription?.map((subscription, idx) => (
+                      <li key={idx}>{subscription?.name?.split(" ")[0]}</li>
                     ))}
-                </div>
+                </ul>
+              )}
+            </div>
+
+            <div className={styles.dropbox}>
+              <button className={styles.dropdown}>
+                Time
+                <button onClick={() => setOpenTime((prev) => !prev)}>
+                  <Caret />
+                </button>
+              </button>
+              {openTime && (
+                <ul className={styles.dropdownitems}>
+                  {orderPageInfo?.periods &&
+                    orderPageInfo?.periods?.map((period, idx) => (
+                      <li key={idx}>{period}</li>
+                    ))}
+                </ul>
+              )}
+            </div>
+
+            <div className={styles.search}>
+              <SearchIcon />
+              <input type="search" placeholder="Search..." />
+            </div>
+          </div>
+          {data &&
+            data?.map((row, idx) => (
+              <div
+                key={idx}
+                className={styles.row}
+                onClick={() => setRowData(row)}
+              >
+                <img src={row?.img} />
+                <p>{row?.name}</p>
+                <p>{row?.buisnessName}</p>
+                <p>{row?.subscription}</p>
+                <p>{row?.timeAgo}</p>
               </div>
             ))}
         </div>
-        <div className={styles.recentOrders}>
-          <h2>Recent Orders</h2>
-          <div className={styles.timelineLine} />
-          {recents &&
-            recents.length &&
-            recents.map((recent, i) => (
-              <div key={i} className={styles.recents}>
-                <div className={styles.recentsNumber}>{recent?.quantity}x</div>
-                <div className={styles.timeNameBox}>
-                  <h2>{recent?.name}</h2>
-                  <p>{recent?.timeAgo}</p>
-                </div>
-              </div>
-            ))}
+        <div className={styles.orderResult}>
+          <img src={rowData?.img} />
+          <h1>{rowData?.name}</h1>
         </div>
       </div>
     </div>
