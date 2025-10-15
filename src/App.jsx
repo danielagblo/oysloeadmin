@@ -12,25 +12,33 @@ import { Alerts } from "./pages/Alerts/Alerts";
 import { Categories } from "./pages/Categories/Categories";
 import { Applcations } from "./pages/Applications/Applications";
 import { Settings } from "./pages/Settings/Settings";
+import { Login } from "./pages/Login/Login";
 
 function App() {
+  const loggedin = true;
   return (
     <BrowserRouter>
-      <SideBar />
-      <Header />
-      <ContentArea>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/ads" element={<Ads />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/users" element={<Users />} />
-          <Route path="/support" element={<Support />} />
-          <Route path="/alerts" element={<Alerts />} />
-          <Route path="/categories" element={<Categories />} />
-          <Route path="/applications" element={<Applcations />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
-      </ContentArea>
+      {!loggedin ? (
+        <Login />
+      ) : (
+        <>
+          <SideBar />
+          <Header />
+          <ContentArea>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/ads" element={<Ads />} />
+              <Route path="/orders" element={<Orders />} />
+              <Route path="/users" element={<Users />} />
+              <Route path="/support" element={<Support />} />
+              <Route path="/alerts" element={<Alerts />} />
+              <Route path="/categories" element={<Categories />} />
+              <Route path="/applications" element={<Applcations />} />
+              <Route path="/settings" element={<Settings />} />
+            </Routes>
+          </ContentArea>
+        </>
+      )}
     </BrowserRouter>
   );
 }
