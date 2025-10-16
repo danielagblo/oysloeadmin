@@ -1,5 +1,6 @@
 .ordersContainer {
   padding-bottom: 1rem;
+  position: relative;
 }
 
 .subscriptionTiers,
@@ -16,6 +17,9 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 2rem;
+  position: sticky;
+  top: var(--header-height);
+  z-index: 20;
 }
 
 h2 {
@@ -161,6 +165,13 @@ input {
   align-items: center;
   flex-direction: column;
   gap: var(--content-padding);
+}
+
+.header {
+  position: sticky;
+  top: calc(25% + var(--header-height));
+  border-bottom: 1px solid var(--color-muted);
+  z-index: 10;
 }
 
 .header,
