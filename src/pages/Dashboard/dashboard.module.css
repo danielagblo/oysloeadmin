@@ -52,3 +52,23 @@ h1 {
 .gcard p {
   text-wrap: nowrap;
 }
+
+@media (max-width: 768px) {
+  .dashboardContainer {
+    align-items: center;
+    /* justify-content: center; */
+    width: 100%;
+    /* border: 2px solid green; */
+  }
+  .gcard,
+  .gridBox {
+    /* border: 2px solid red; */
+  }
+
+  .gcard {
+    flex-direction: column;
+  }
+  .gridBox {
+    width: 100%;
+  }
+}

@@ -9,3 +9,10 @@
   left: calc(var(--sidebar-width));
   /* overflow-x: hidden; */
 }
+
+@media (max-width: 768px) {
+  .contentContainer {
+    left: 0;
+    width: 100%;
+  }
+}
