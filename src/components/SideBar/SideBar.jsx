@@ -12,8 +12,9 @@ import Order from "../../assets/Order.png";
 import Users from "../../assets/Users.png";
 import ImageIcon from "../SVGIcons/ImageIcon";
 import { NavLink } from "react-router-dom";
+import { X } from "lucide-react";
 
-export const SideBar = () => {
+export const SideBar = ({ openSideBar, setOpenSideBar }) => {
   const links = [
     {
       page: "Dashboard",
@@ -57,8 +58,18 @@ export const SideBar = () => {
     },
   ];
   return (
-    <div className={styles.sidebarContainer}>
+    <div
+      className={`${styles.sidebarContainer} ${
+        openSideBar ? styles.open : styles.close
+      }`}
+    >
       <div className={styles.links}>
+        <button
+          className={styles.menuButtonIcon}
+          onClick={() => setOpenSideBar((prev) => !prev)}
+        >
+          <X size={30} />
+        </button>
         {links?.map((link, i) => (
           <NavLink
             key={i}

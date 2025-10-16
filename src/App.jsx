@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Header } from "./components/Header/Header";
 import { SideBar } from "./components/SideBar/SideBar";
 import { ContentArea } from "./components/ContentArea/ContentArea";
@@ -15,6 +15,7 @@ import { Settings } from "./pages/Settings/Settings";
 import { Login } from "./pages/Login/Login";
 
 function App() {
+  const [openSideBar, setOpenSideBar] = useState(false);
   const loggedin = true;
   return (
     <BrowserRouter>
@@ -22,8 +23,9 @@ function App() {
         <Login />
       ) : (
         <>
-          <SideBar />
-          <Header />
+          <Header setOpenSideBar={setOpenSideBar} />
+          <SideBar openSideBar={openSideBar} setOpenSideBar={setOpenSideBar} />
+
           <ContentArea>
             <Routes>
               <Route path="/" element={<Dashboard />} />

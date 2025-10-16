@@ -5,6 +5,10 @@
   align-items: center;
 }
 
+.menuButtonIcon {
+  display: none;
+}
+
 .headerContainer {
   display: flex;
   justify-content: space-between;
@@ -58,5 +62,10 @@
     left: 0;
     width: 100%;
     padding-inline: 10px;
+    border: 1px solid var(--color-muted);
+  }
+  .menuButtonIcon {
+    display: block;
+    z-index: 501 !important;
   }
 }

@@ -1,9 +1,16 @@
 import React from "react";
 import styles from "./header.module.css";
+import { MenuIcon } from "lucide-react";
 
-export const Header = () => {
+export const Header = ({ setOpenSideBar }) => {
   return (
     <div className={styles.headerContainer}>
+      <button
+        className={styles.menuButtonIcon}
+        onClick={() => setOpenSideBar((prev) => !prev)}
+      >
+        <MenuIcon />
+      </button>
       <h1>Oysloe</h1>
       <div className={styles.rightHeader}>
         <div>
