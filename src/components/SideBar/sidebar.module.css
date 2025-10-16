@@ -27,6 +27,7 @@
 
 .links {
   margin-top: 25%;
+  gap: 0px;
 }
 
 .links,
@@ -37,9 +38,15 @@
 .link,
 .active {
   padding: 10px;
-  scale: 0.9;
+  scale: 0.8;
   width: 100%;
   border-radius: var(--radius-ml);
+  /* gap: 0.2rem; */
+  margin-bottom: -10px;
+}
+
+.link:last-child {
+  margin-bottom: 3px;
 }
 
 .link p {

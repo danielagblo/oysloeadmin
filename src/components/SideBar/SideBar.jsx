@@ -13,6 +13,7 @@ import Users from "../../assets/Users.png";
 import ImageIcon from "../SVGIcons/ImageIcon";
 import { NavLink } from "react-router-dom";
 import { X } from "lucide-react";
+import { Location } from "../SVGIcons/Location";
 
 export const SideBar = ({ openSideBar, setOpenSideBar }) => {
   const links = [
@@ -55,6 +56,11 @@ export const SideBar = ({ openSideBar, setOpenSideBar }) => {
       page: "Applicatons",
       link: "/applications",
       icon: () => <ImageIcon src={Applications} size={25} alt="Ads Icon" />,
+    },
+    {
+      page: "Locations",
+      link: "/locations",
+      icon: () => <Location size={25} />,
     },
   ];
   return (

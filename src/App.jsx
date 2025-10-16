@@ -13,6 +13,7 @@ import { Categories } from "./pages/Categories/Categories";
 import { Applcations } from "./pages/Applications/Applications";
 import { Settings } from "./pages/Settings/Settings";
 import { Login } from "./pages/Login/Login";
+import { Locations } from "./pages/Locations/Locations";
 
 function App() {
   const [openSideBar, setOpenSideBar] = useState(false);
@@ -36,6 +37,7 @@ function App() {
               <Route path="/alerts" element={<Alerts />} />
               <Route path="/categories" element={<Categories />} />
               <Route path="/applications" element={<Applcations />} />
+              <Route path="/locations" element={<Locations />} />
               <Route path="/settings" element={<Settings />} />
             </Routes>
           </ContentArea>
