@@ -4,7 +4,17 @@ import Email from "../../assets/email.png";
 import Password from "../../assets/password.png";
 import ImageIcon from "../../components/SVGIcons/ImageIcon";
 
-export const Login = () => {
+export const Login = ({ setLoggedin }) => {
+  const isLoggedIn = sessionStorage?.getItem("isLoggedIn");
+
+  if (JSON.parse(isLoggedIn)) {
+    setLoggedin(isLoggedIn);
+  }
+  const handleLogin = () => {
+    sessionStorage?.setItem("isLoggedIn", JSON.stringify(true));
+    setLoggedin(true);
+  };
+
   return (
     <div className={styles.loginContainer}>
       <form>
@@ -17,7 +27,7 @@ export const Login = () => {
           <ImageIcon src={Password} size={25} alt="Email" />
           <input type="password" placeholder="Password" required />
         </div>
-        <button>Login</button>
+        <button onClick={handleLogin}>Login</button>
       </form>
     </div>
   );

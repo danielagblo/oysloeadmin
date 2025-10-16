@@ -16,11 +16,11 @@ import { Login } from "./pages/Login/Login";
 
 function App() {
   const [openSideBar, setOpenSideBar] = useState(false);
-  const loggedin = true;
+  const [loggedin, setLoggedin] = useState(false);
   return (
     <BrowserRouter>
       {!loggedin ? (
-        <Login />
+        <Login setLoggedin={setLoggedin} />
       ) : (
         <>
           <Header setOpenSideBar={setOpenSideBar} />
