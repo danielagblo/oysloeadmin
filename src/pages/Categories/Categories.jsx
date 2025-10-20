@@ -4,6 +4,7 @@ import { SearchIcon } from "../../components/SVGIcons/SearchIcon";
 import { categories } from "../../api/categories";
 import { DragIcon } from "../../components/SVGIcons/DragIcon";
 import { EditIcon, TrashIcon } from "lucide-react";
+import { Caret } from "../../components/SVGIcons/Caret";
 
 export const Categories = () => {
   const [selectedCategory, setSelectedCategory] = useState(0);
@@ -33,12 +34,14 @@ export const Categories = () => {
               >
                 <DragIcon />
                 <p>{category?.category}</p>
-                <button>
-                  <EditIcon size={15} />
-                </button>
-                <button>
-                  <TrashIcon size={15} />
-                </button>
+                <div className={styles.buttonBox}>
+                  <button>
+                    <EditIcon size={15} />
+                  </button>
+                  <button>
+                    <TrashIcon size={15} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -60,12 +63,14 @@ export const Categories = () => {
                 >
                   <DragIcon />
                   <p>{subCategory?.name}</p>
-                  <button>
-                    <EditIcon size={15} />
-                  </button>
-                  <button>
-                    <TrashIcon size={15} />
-                  </button>
+                  <div className={styles.buttonBox}>
+                    <button>
+                      <EditIcon size={15} />
+                    </button>
+                    <button>
+                      <TrashIcon size={15} />
+                    </button>
+                  </div>
                 </div>
               )
             )}
@@ -87,12 +92,14 @@ export const Categories = () => {
               >
                 <DragIcon />
                 <p>{parameter?.name}</p>
-                <button>
-                  <EditIcon size={15} />
-                </button>
-                <button>
-                  <TrashIcon size={15} />
-                </button>
+                <div className={styles.buttonBox}>
+                  <button>
+                    <EditIcon size={15} />
+                  </button>
+                  <button>
+                    <TrashIcon size={15} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -113,18 +120,77 @@ export const Categories = () => {
               >
                 <DragIcon />
                 <p>{option}</p>
-                <button>
-                  <EditIcon size={15} />
-                </button>
-                <button>
-                  <TrashIcon size={15} />
-                </button>
+                <div className={styles.buttonBox}>
+                  <button>
+                    <EditIcon size={15} />
+                  </button>
+                  <button>
+                    <TrashIcon size={15} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </div>
-      <div className={styles.categoryInputs}>Inputs Section</div>
+      <div className={styles.categoryInputs}>
+        <div className={styles.inputColumn}>
+          {/* <div className={styles.dropdownButton}>
+            <p>Category</p>
+            <button>
+              <Caret />
+            </button>
+          </div> */}
+          <input
+            className={styles.input}
+            tSaveype="text"
+            placeholder="Type Category"
+          />
+          <button className={styles.saveButton}>Save</button>
+        </div>
+        <div className={styles.inputColumn}>
+          <div className={styles.dropdownButton}>
+            <p>Category</p>
+            <button>
+              <Caret />
+            </button>
+          </div>
+          <input
+            className={styles.input}
+            tSaveype="text"
+            placeholder="Type Sub-category"
+          />
+          <button className={styles.saveButton}>Save</button>
+        </div>
+        <div className={styles.inputColumn}>
+          <div className={styles.dropdownButton}>
+            <p>Sub-category</p>
+            <button>
+              <Caret />
+            </button>
+          </div>
+          <input
+            className={styles.input}
+            tSaveype="text"
+            placeholder="Type Parameter"
+          />
+          <button className={styles.saveButton}>Save</button>
+        </div>
+        <div className={styles.inputColumn}>
+          <div className={styles.dropdownButton}>
+            <p>Parameter</p>
+            <button>
+              <Caret />
+            </button>
+          </div>
+          <input
+            className={styles.input}
+            tSaveype="text"
+            placeholder="Type Option"
+          />
+          <button className={styles.saveButton}>Save</button>
+        </div>
+      </div>
     </div>
   );
 };
