@@ -33,3 +33,77 @@
   border-radius: var(--radius-xl);
   font-weight: lighter;
 }
+
+.categoryColumns {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: stretch;
+  padding: var(--content-padding);
+  padding-inline: 0;
+  gap: var(--content-padding);
+}
+
+.column {
+  min-width: 270px;
+  background-color: var(--color-bg-secondary);
+}
+
+.column:last-child {
+  width: 100%;
+}
+
+.items {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.itemHeader {
+  padding: calc(2 * var(--content-padding));
+  text-align: center;
+  width: 100%;
+  font-size: 1.15rem;
+  font-weight: light;
+  margin-bottom: 2rem;
+  background-color: white;
+}
+
+.itemItem,
+.active {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: var(--content-padding);
+  background-color: white;
+}
+
+.p {
+  width: 50%;
+}
+
+.active {
+  background-color: var(--color-bg);
+}
+
+.itemItem:last-child {
+  margin-bottom: 1rem;
+}
+
+.itemItem button,
+.active button {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-bg);
+  display: grid;
+  place-content: center;
+}
+
+.active button {
+  background-color: var(--color-bg-secondary);
+}
