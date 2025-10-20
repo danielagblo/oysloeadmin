@@ -11,7 +11,7 @@
 
 .location {
   background-color: var(--color-bg-secondary);
-  padding: var(--content-padding);
+  /* padding: var(--content-padding); */
   min-width: 270px;
   flex-shrink: 0;
   /* height: calc(100dvh - 2 * var(--content-padding)); */
@@ -26,24 +26,85 @@
 .locationHeader {
   position: sticky;
   top: 0;
-  background-color: var(--color-bg-secondary);
-  border-bottom: 1px solid var(--color-muted);
-  padding-bottom: 0.5rem;
+  background-color: white;
+  padding: var(--content-padding);
   z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.number {
+  font-weight: bolder;
+  text-align: left;
+  background-color: var(--color-bg);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  display: grid;
+  place-content: center;
+}
+.region {
+  text-align: left;
+  margin-left: 1.5rem;
+  width: 80%;
 }
 
 .townList {
-  flex: 1; /* pushes addSection to bottom */
+  flex: 1;
   padding: 0;
   margin: 0;
   list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.townList li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--content-padding);
+  background-color: white;
+  gap: 1rem;
+}
+
+.townList li p {
+  width: 50%;
+}
+
+.townList li span:last-child {
+  width: 40px;
+  height: 40px;
+  background-color: var(--color-bg);
+  border-radius: var(--radius-full);
+  display: grid;
+  place-content: center;
 }
 
 .addSection {
   position: sticky;
   bottom: 0;
-  background-color: var(--color-bg-secondary);
-  border-top: 1px solid var(--color-muted);
-  padding-top: 0.5rem;
   z-index: 2;
+  background-color: white;
+  padding: var(--content-padding);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.addSection input {
+  border: none;
+  outline: none;
+  background-color: transparent;
+}
+
+.addSection span {
+  background-color: var(--color-theme-green);
+  border-radius: var(--radius-full);
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-content: center;
 }
