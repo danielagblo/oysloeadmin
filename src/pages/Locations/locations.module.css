@@ -14,7 +14,7 @@
   /* padding: var(--content-padding); */
   min-width: 270px;
   flex-shrink: 0;
-  /* height: calc(100dvh - 2 * var(--content-padding)); */
+  min-height: calc(100dvh - 5 * var(--content-padding)) !important;
   height: 100%;
   border-radius: var(--radius-md);
   display: flex;
@@ -61,20 +61,23 @@
   gap: 5px;
 }
 
-.townList li {
+.townDragOverlay {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: var(--content-padding);
   background-color: white;
   gap: 1rem;
+  width: 100%;
+  height: fit-content;
 }
 
-.townList li p {
+.townDragOverlay p {
   width: 50%;
 }
 
-.townList li span:last-child {
+.townDragOverlay button,
+.townDragOverlay div {
   width: 40px;
   height: 40px;
   background-color: var(--color-bg);
@@ -100,7 +103,7 @@
   background-color: transparent;
 }
 
-.addSection span {
+.addSection button {
   background-color: var(--color-theme-green);
   border-radius: var(--radius-full);
   width: 40px;
