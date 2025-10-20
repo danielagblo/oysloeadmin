@@ -4,8 +4,8 @@ export const Support = ({ size = 30 }) => {
   return (
     <svg
       width={size}
-      height={size + 1}
-      viewBox={`0 0 ${size} ${size + 1}`}
+      height={size}
+      viewBox="0 0 30 31"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >

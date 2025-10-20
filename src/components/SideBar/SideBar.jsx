@@ -50,7 +50,7 @@ export const SideBar = ({ openSideBar, setOpenSideBar }) => {
     {
       page: "Categories",
       link: "/categories",
-      icon: () => <Categories size={25} />,
+      icon: () => <Categories size={30} />,
     },
     {
       page: "Applicatons",
