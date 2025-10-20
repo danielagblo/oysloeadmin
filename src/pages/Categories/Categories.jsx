@@ -11,6 +11,10 @@ export const Categories = () => {
   const [selectedSubCategory, setSelectedSubCategory] = useState(0);
   const [selectedParameter, setSelectedParameter] = useState(0);
   const [selectedOption, setSelectedOption] = useState(0);
+  const [openCategoryModal, setOpenCategoryModal] = useState(true);
+  const [openSubCategoryModal, setOpenSubCategoryModal] = useState(true);
+  const [openParameterModal, setOpenParameterModal] = useState(true);
+
   return (
     <div className={styles.categoryContainer}>
       <div className={styles.categoryHeader}>
@@ -150,11 +154,36 @@ export const Categories = () => {
         </div>
         <div className={styles.inputColumn}>
           <div className={styles.dropdownButton}>
-            <p>Category</p>
-            <button>
+            <p>{categories[selectedCategory]?.category || "Category"}</p>
+            <button onClick={() => setOpenCategoryModal((prev) => !prev)}>
               <Caret />
             </button>
           </div>
+          {openCategoryModal && (
+            <div className={styles.dropdownModal}>
+              <p>Category</p>
+              <div className={styles.modalSearchBox}>
+                <SearchIcon size={16} />
+                <input type="search" placeholder="Search" />
+              </div>
+              <ul>
+                {categories?.map((category, idx) => (
+                  <li
+                    key={idx}
+                    onClick={() => {
+                      setSelectedCategory(idx);
+                      setOpenCategoryModal(false);
+                    }}
+                  >
+                    {category?.category}
+                  </li>
+                ))}
+              </ul>
+              <button onClick={() => setOpenCategoryModal(false)}>
+                Select
+              </button>
+            </div>
+          )}
           <input
             className={styles.input}
             tSaveype="text"
@@ -164,11 +193,41 @@ export const Categories = () => {
         </div>
         <div className={styles.inputColumn}>
           <div className={styles.dropdownButton}>
-            <p>Sub-category</p>
-            <button>
+            <p>
+              {categories[selectedCategory]?.subCategories[selectedSubCategory]
+                ?.name || "Sub-category"}
+            </p>
+            <button onClick={() => setOpenSubCategoryModal((prev) => !prev)}>
               <Caret />
             </button>
           </div>
+          {openSubCategoryModal && (
+            <div className={styles.dropdownModal}>
+              <p>Category</p>
+              <div className={styles.modalSearchBox}>
+                <SearchIcon size={16} />
+                <input type="search" placeholder="Search" />
+              </div>
+              <ul>
+                {categories[selectedCategory]?.subCategories?.map(
+                  (subCategory, idx) => (
+                    <li
+                      key={idx}
+                      onClick={() => {
+                        setSelectedSubCategory(idx);
+                        setOpenSubCategoryModal(false);
+                      }}
+                    >
+                      {subCategory?.name}
+                    </li>
+                  )
+                )}
+              </ul>
+              <button onClick={() => setOpenSubCategoryModal(false)}>
+                Select
+              </button>
+            </div>
+          )}
           <input
             className={styles.input}
             tSaveype="text"
@@ -179,10 +238,37 @@ export const Categories = () => {
         <div className={styles.inputColumn}>
           <div className={styles.dropdownButton}>
             <p>Parameter</p>
-            <button>
+            <button onClick={() => setOpenParameterModal((prev) => !prev)}>
               <Caret />
             </button>
           </div>
+          {openParameterModal && (
+            <div className={styles.dropdownModal}>
+              <p>Category</p>
+              <div className={styles.modalSearchBox}>
+                <SearchIcon size={16} />
+                <input type="search" placeholder="Search" />
+              </div>
+              <ul>
+                {categories[selectedCategory]?.subCategories[
+                  selectedSubCategory
+                ]?.parameters?.map((subCategory, idx) => (
+                  <li
+                    key={idx}
+                    onClick={() => {
+                      setSelectedParameter(idx);
+                      setOpenParameterModal(false);
+                    }}
+                  >
+                    {subCategory?.name}
+                  </li>
+                ))}
+              </ul>
+              <button onClick={() => setOpenParameterModal(false)}>
+                Select
+              </button>
+            </div>
+          )}
           <input
             className={styles.input}
             tSaveype="text"

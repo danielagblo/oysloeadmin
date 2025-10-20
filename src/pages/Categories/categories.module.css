@@ -11,7 +11,8 @@
   border-top-left-radius: var(--radius-lg);
   border-top-right-radius: var(--radius-lg);
 }
-.searchBox {
+.searchBox,
+.modalSearchBox {
   border: 3px solid var(--color-muted-1);
   border-radius: var(--radius-xl);
   overflow: hidden;
@@ -21,7 +22,8 @@
   padding: 0 var(--content-padding);
 }
 
-.searchBox input {
+.searchBox input,
+.modalSearchBox input {
   border: none;
   outline: none;
 }
@@ -142,6 +144,7 @@
 .dropdownButton {
   flex-direction: row;
   justify-content: space-between;
+  position: relative !important;
 }
 
 .dropdownButton,
@@ -169,4 +172,65 @@
 
 .dropdownButton {
   border: none;
+}
+
+.dropdownModal {
+  position: absolute;
+  bottom: 25%;
+  min-width: 300px;
+  background-color: var(--color-bg-secondary);
+  z-index: 100;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.1);
+
+  /* padding: var(--content-padding); */
+}
+
+.dropdownModal,
+.dropdownModal ul {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dropdownModal p {
+  padding: var(--content-padding);
+  background-color: white;
+  text-align: center;
+  width: 100%;
+}
+
+.dropdownModal ul {
+  width: 100%;
+  max-height: 50dvh;
+}
+
+.dropdownModal ul li {
+  padding: var(--content-padding);
+  background-color: white;
+  width: 100%;
+  cursor: pointer;
+}
+
+.dropdownModal button {
+  width: calc(100% - (4 * var(--content-padding)));
+  background-color: var(--color-theme-green);
+  padding: var(--content-padding);
+  text-align: center;
+  border-radius: var(--radius-md);
+  margin-block: var(--content-padding);
+}
+
+.modalSearchBox {
+  width: calc(100% - (2 * var(--content-padding)));
+  gap: var(--content-padding);
+  padding-inline: var(--content-padding);
+}
+
+.modalSearchBox input {
+  width: 100%;
+  padding-block: 5px;
 }
