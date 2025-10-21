@@ -60,7 +60,7 @@ export const supportData = {
             {
               id: "file-1",
               type: "image",
-              url: "/uploads/iphone15.png",
+              url: "https://randomuser.me/api/portraits/women/3.jpg",
             },
           ],
           timestamp: "2025-10-19T10:07:00Z",

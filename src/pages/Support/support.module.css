@@ -1,7 +1,6 @@
 .supportContainer {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   gap: var(--content-padding);
   padding: var(--content-padding);
   padding-right: 0;
@@ -10,10 +9,6 @@
 .actualChatBox,
 .allChatBox {
   width: 100%;
-}
-
-.actualChatBox {
-  width: 65%;
 }
 
 .allChatBox {
@@ -58,7 +53,8 @@
   background-color: transparent;
 }
 
-.dropDown {
+.dropDown,
+.backButton {
   display: flex;
   position: relative;
   justify-content: space-between;
@@ -68,7 +64,8 @@
   background-color: var(--color-bg);
   border-radius: var(--radius-xl);
 }
-.dropDown button {
+.dropDown button,
+.backButton button {
   background-color: var(--color-bg-secondary);
   border-radius: var(--radius-full);
   padding: 5px;
@@ -128,7 +125,8 @@
   font-size: 0.8rem;
 }
 
-.closed {
+.closed,
+.closeButton {
   font-size: 0.7rem;
   color: var(--color-bg-secondary);
   background-color: var(--color-theme-red);
@@ -162,4 +160,166 @@
   height: 20px;
   display: grid;
   place-content: center;
+}
+
+.actualChatBox {
+  width: 65%;
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-secondary);
+}
+
+.backButton button {
+  rotate: 90deg;
+}
+
+.closeButton {
+  font-size: 1rem;
+  padding: var(--content-padding) calc(2 * var(--content-padding));
+  border-radius: var(--radius-lg);
+}
+
+/* Chat messages area */
+.chatMessagesContainer {
+  display: flex;
+  flex-direction: column;
+  height: calc(
+    100% - 64px
+  ); /* account for header height; adjust to your layout */
+  padding: 1rem;
+  gap: 0.5rem;
+}
+
+.chatMeta {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-muted-1);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background-color: white;
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
+}
+
+.chatParticipant {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.chatParticipant img {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+}
+
+.chatParticipantName {
+  font-weight: 600;
+}
+
+.chatParticipantStatus {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+/* scrollable messages area */
+.chatMessages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: transparent;
+}
+
+/* date divider */
+.dateDivider {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  margin: 0.5rem 0;
+}
+
+/* message row */
+.messageRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+/* incoming = left, outgoing = right */
+.incoming {
+  justify-content: flex-start;
+}
+
+.outgoing {
+  justify-content: flex-end;
+}
+
+/* small avatar besides messages */
+.messageAvatar img {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+}
+
+/* bubble */
+.messageBubble {
+  max-width: 70%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+  background-color: white;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* outgoing bubble color */
+.outgoing .messageBubble {
+  background-color: var(--color-theme-green);
+  color: var(--color-bg-secondary);
+}
+
+/* message text */
+.messageText {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* attachments */
+.attachmentImage {
+  max-width: 100%;
+  border-radius: 8px;
+  display: block;
+}
+
+.attachmentAudio {
+  width: 100%;
+}
+
+/* meta row aligned right inside bubble */
+.messageMeta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+/* time and seen check */
+.messageTime {
+  opacity: 0.9;
+}
+
+.seenCheck {
+  font-weight: 700;
+  color: var(--color-muted);
+}
+
+/* end spacer for autoscroll */
+.messagesEnd {
+  height: 1px;
 }
