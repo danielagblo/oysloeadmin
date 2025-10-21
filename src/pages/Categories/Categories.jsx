@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import styles from "./categories.module.css";
 import { SearchIcon } from "../../components/SVGIcons/SearchIcon";
 import { categories as initialData } from "../../api/categories";
@@ -31,6 +31,16 @@ const sluggify = (s = "") =>
 
 const makeId = (type, slug) => `${type}--${slug}`;
 
+/** stable option id generator — include timestamp for uniqueness when adding */
+const makeOptionId = (catSlug, subSlug, paramSlug, value) =>
+  `option--${[
+    catSlug,
+    subSlug,
+    paramSlug,
+    sluggify(String(value)),
+    Date.now(),
+  ].join("::")}`;
+
 /* ------------------ Sortable item (generic) ------------------ */
 /* listeners attached only to handle so buttons/inputs won't start drag */
 function SortableListItem({
@@ -40,6 +50,7 @@ function SortableListItem({
   children,
   onEdit,
   onDelete,
+  active,
 }) {
   const {
     attributes,
@@ -56,12 +67,14 @@ function SortableListItem({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0 : 1,
+    opacity: isDragging ? 0.4 : 1,
+    touchAction: "manipulation",
+    userSelect: "none",
   };
 
   return (
     <div
-      className={styles.itemItem}
+      className={active ? styles.activeItem : styles.itemItem}
       ref={setNodeRef}
       style={style}
       {...attributes} /* keep ARIA attributes on the item */
@@ -81,6 +94,8 @@ function SortableListItem({
             onEdit && onEdit();
           }}
           onPointerDown={(e) => e.stopPropagation()}
+          aria-label="Edit"
+          type="button"
         >
           <EditIcon size={15} />
         </button>
@@ -90,6 +105,8 @@ function SortableListItem({
             onDelete && onDelete();
           }}
           onPointerDown={(e) => e.stopPropagation()}
+          aria-label="Delete"
+          type="button"
         >
           <TrashIcon size={15} />
         </button>
@@ -100,27 +117,40 @@ function SortableListItem({
 
 /* ------------------ Main component ------------------ */
 export const Categories = () => {
-  // clone initial data into state (deep-ish copy so we don't mutate imported constant)
+  // clone initial data into state (deep-ish copy) and normalize option shapes
   const [categories, setCategories] = useState(() =>
-    initialData.map((c) => ({
-      ...c,
+    (initialData || []).map((c) => ({
+      category: c.category,
       slug: c.slug || sluggify(c.category),
       subCategories: (c.subCategories || []).map((sc) => ({
-        ...sc,
+        name: sc.name,
         slug: sc.slug || sluggify(sc.name),
         parameters: (sc.parameters || []).map((p) => ({
-          ...p,
+          name: p.name,
           slug: p.slug || sluggify(p.name),
-          options: (p.options || []).slice(),
+          // convert raw option strings into objects with stable id + value
+          options: (p.options || []).map((opt, optIdx) => ({
+            id:
+              (opt &&
+                makeOptionId(
+                  c.slug || sluggify(c.category),
+                  sc.slug || sluggify(sc.name),
+                  p.slug || sluggify(p.name),
+                  opt
+                )) ||
+              `option--${optIdx}::${Date.now()}`,
+            value: opt,
+          })),
         })),
       })),
     }))
   );
 
-  const [selectedCategory, setSelectedCategory] = useState(0);
-  const [selectedSubCategory, setSelectedSubCategory] = useState(0);
-  const [selectedParameter, setSelectedParameter] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(0);
+  // selected values are STABLE identifiers (slugs / ids) — not indices
+  const [selectedCategorySlug, setSelectedCategorySlug] = useState(null);
+  const [selectedSubCategorySlug, setSelectedSubCategorySlug] = useState(null);
+  const [selectedParameterSlug, setSelectedParameterSlug] = useState(null);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
 
   // modal toggles & modal search inputs
   const [openCategoryModal, setOpenCategoryModal] = useState(false);
@@ -141,6 +171,67 @@ export const Categories = () => {
 
   const sensors = useSensors(useSensor(PointerSensor));
 
+  /* ---------- Effects: set defaults after categories init/change ---------- */
+  useEffect(() => {
+    if (!categories || categories.length === 0) {
+      setSelectedCategorySlug(null);
+      return;
+    }
+    // set a default selected category if none
+    if (!selectedCategorySlug) {
+      const firstCat = categories[0];
+      setSelectedCategorySlug(firstCat.slug);
+      // set sub / param defaults too
+      const firstSub = firstCat.subCategories?.[0];
+      if (firstSub) {
+        setSelectedSubCategorySlug(firstSub.slug);
+        const firstParam = firstSub.parameters?.[0];
+        if (firstParam) setSelectedParameterSlug(firstParam.slug);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categories]);
+
+  // when category changes, ensure sub/param selection stays valid
+  useEffect(() => {
+    const catIdx = categories.findIndex((c) => c.slug === selectedCategorySlug);
+    if (catIdx === -1) {
+      // fallback to first category if slug invalid
+      if (categories.length > 0) {
+        setSelectedCategorySlug(categories[0].slug);
+      }
+      return;
+    }
+    const subs = categories[catIdx].subCategories || [];
+    if (!selectedSubCategorySlug && subs.length) {
+      setSelectedSubCategorySlug(subs[0].slug);
+    } else if (selectedSubCategorySlug) {
+      const subExists = subs.some((s) => s.slug === selectedSubCategorySlug);
+      if (!subExists) setSelectedSubCategorySlug(subs[0]?.slug ?? null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategorySlug, categories]);
+
+  // when subcategory changes, ensure parameter selection stays valid
+  useEffect(() => {
+    const catIdx = categories.findIndex((c) => c.slug === selectedCategorySlug);
+    if (catIdx === -1) return;
+    const subs = categories[catIdx].subCategories || [];
+    const subIdx = subs.findIndex((s) => s.slug === selectedSubCategorySlug);
+    if (subIdx === -1) {
+      if (subs.length) setSelectedSubCategorySlug(subs[0].slug);
+      return;
+    }
+    const params = subs[subIdx].parameters || [];
+    if (!selectedParameterSlug && params.length) {
+      setSelectedParameterSlug(params[0].slug);
+    } else if (selectedParameterSlug) {
+      const pExists = params.some((p) => p.slug === selectedParameterSlug);
+      if (!pExists) setSelectedParameterSlug(params[0]?.slug ?? null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSubCategorySlug, selectedCategorySlug, categories]);
+
   /* ------------- Utility setters ------------- */
   const clampIndex = (i, arr) => Math.max(0, Math.min(i, arr.length - 1));
 
@@ -151,15 +242,18 @@ export const Categories = () => {
       { category: name, slug, subCategories: [] },
     ]);
     setNewCategoryName("");
-    setSelectedCategory(categories.length); // select new one (index will update after state change)
+    setSelectedCategorySlug(slug);
+    setSelectedSubCategorySlug(null);
+    setSelectedParameterSlug(null);
+    setSelectedOptionId(null);
   };
 
-  const addSubCategory = (categoryIdx, name) => {
-    if (categoryIdx == null) return;
+  const addSubCategory = (categorySlug, name) => {
+    if (!categorySlug) return;
     const slug = sluggify(name);
     setCategories((prev) =>
-      prev.map((c, i) =>
-        i === categoryIdx
+      prev.map((c) =>
+        c.slug === categorySlug
           ? {
               ...c,
               subCategories: [
@@ -171,23 +265,21 @@ export const Categories = () => {
       )
     );
     setNewSubCategoryName("");
-    setSelectedSubCategory((prev) => {
-      // select last in that category after state updates (best-effort)
-      const target = categories[categoryIdx];
-      return target?.subCategories?.length || 0;
-    });
+    setSelectedSubCategorySlug(slug);
+    setSelectedParameterSlug(null);
+    setSelectedOptionId(null);
   };
 
-  const addParameter = (categoryIdx, subIdx, name) => {
-    if (categoryIdx == null || subIdx == null) return;
+  const addParameter = (categorySlug, subSlug, name) => {
+    if (!categorySlug || !subSlug) return;
     const slug = sluggify(name);
     setCategories((prev) =>
-      prev.map((c, i) =>
-        i === categoryIdx
+      prev.map((c) =>
+        c.slug === categorySlug
           ? {
               ...c,
-              subCategories: c.subCategories.map((s, j) =>
-                j === subIdx
+              subCategories: c.subCategories.map((s) =>
+                s.slug === subSlug
                   ? {
                       ...s,
                       parameters: [
@@ -202,22 +294,31 @@ export const Categories = () => {
       )
     );
     setNewParameterName("");
+    setSelectedParameterSlug(slug);
+    setSelectedOptionId(null);
   };
 
-  const addOption = (categoryIdx, subIdx, paramIdx, name) => {
-    if (categoryIdx == null || subIdx == null || paramIdx == null) return;
+  const addOption = (categorySlug, subSlug, paramSlug, name) => {
+    if (!categorySlug || !subSlug || !paramSlug) return;
+    const id = makeOptionId(categorySlug, subSlug, paramSlug, name);
     setCategories((prev) =>
-      prev.map((c, i) =>
-        i === categoryIdx
+      prev.map((c) =>
+        c.slug === categorySlug
           ? {
               ...c,
-              subCategories: c.subCategories.map((s, j) =>
-                j === subIdx
+              subCategories: c.subCategories.map((s) =>
+                s.slug === subSlug
                   ? {
                       ...s,
-                      parameters: s.parameters.map((p, k) =>
-                        k === paramIdx
-                          ? { ...p, options: [...(p.options || []), name] }
+                      parameters: s.parameters.map((p) =>
+                        p.slug === paramSlug
+                          ? {
+                              ...p,
+                              options: [
+                                ...(p.options || []),
+                                { id, value: name },
+                              ],
+                            }
                           : p
                       ),
                     }
@@ -228,9 +329,10 @@ export const Categories = () => {
       )
     );
     setNewOptionName("");
+    setSelectedOptionId(id);
   };
 
-  /* ------------- Edit / Delete ------------- */
+  /* ------------- Edit / Delete (index-based functions still work — find indices inside) ------------- */
   const editCategory = (idx) => {
     const current = categories[idx]?.category;
     const next = window.prompt("Edit category", current);
@@ -239,6 +341,7 @@ export const Categories = () => {
     setCategories((prev) =>
       prev.map((c, i) => (i === idx ? { ...c, category: next, slug } : c))
     );
+    setSelectedCategorySlug(slug);
   };
 
   const deleteCategory = (idx) => {
@@ -248,7 +351,12 @@ export const Categories = () => {
       copy.splice(idx, 1);
       return copy;
     });
-    setSelectedCategory((s) => clampIndex(s, categories.slice(0, -1)));
+    // pick a new selected category slug if needed
+    setSelectedCategorySlug((prev) => {
+      if (!categories || categories.length <= 1) return null;
+      const next = categories.slice(0, -1)[0];
+      return next?.slug ?? null;
+    });
   };
 
   const editSubCategory = (catIdx, subIdx) => {
@@ -268,10 +376,12 @@ export const Categories = () => {
           : c
       )
     );
+    setSelectedSubCategorySlug(slug);
   };
 
   const deleteSubCategory = (catIdx, subIdx) => {
     if (!window.confirm("Delete sub-category?")) return;
+    const catSlug = categories[catIdx]?.slug;
     setCategories((prev) =>
       prev.map((c, i) =>
         i === catIdx
@@ -282,9 +392,12 @@ export const Categories = () => {
           : c
       )
     );
-    setSelectedSubCategory((s) =>
-      clampIndex(s, categories[catIdx]?.subCategories?.slice(0, -1) || [])
-    );
+    // adjust selection
+    setSelectedSubCategorySlug((prev) => {
+      const remaining = categories[catIdx]?.subCategories || [];
+      if (remaining.length === 0) return null;
+      return remaining[0]?.slug;
+    });
   };
 
   const editParameter = (catIdx, subIdx, paramIdx) => {
@@ -312,6 +425,7 @@ export const Categories = () => {
           : c
       )
     );
+    setSelectedParameterSlug(slug);
   };
 
   const deleteParameter = (catIdx, subIdx, paramIdx) => {
@@ -333,20 +447,17 @@ export const Categories = () => {
           : c
       )
     );
-    setSelectedParameter((s) =>
-      clampIndex(
-        s,
-        categories[selectedCategory]?.subCategories[
-          selectedSubCategory
-        ]?.parameters?.slice(0, -1) || []
-      )
-    );
+    setSelectedParameterSlug((prev) => {
+      const params =
+        categories[catIdx]?.subCategories?.[subIdx]?.parameters || [];
+      return params[0]?.slug ?? null;
+    });
   };
 
-  const editOption = (catIdx, subIdx, paramIdx, optionIdx) => {
-    const curr =
-      categories[catIdx]?.subCategories?.[subIdx]?.parameters?.[paramIdx]
-        ?.options?.[optionIdx];
+  const editOption = (catIdx, subIdx, paramIdx, optionId) => {
+    const curr = categories[catIdx]?.subCategories?.[subIdx]?.parameters?.[
+      paramIdx
+    ]?.options?.find((o) => o.id === optionId)?.value;
     const next = window.prompt("Edit option", curr);
     if (!next) return;
     setCategories((prev) =>
@@ -362,8 +473,8 @@ export const Categories = () => {
                         k === paramIdx
                           ? {
                               ...p,
-                              options: p.options.map((o, z) =>
-                                z === optionIdx ? next : o
+                              options: p.options.map((o) =>
+                                o.id === optionId ? { ...o, value: next } : o
                               ),
                             }
                           : p
@@ -377,7 +488,7 @@ export const Categories = () => {
     );
   };
 
-  const deleteOption = (catIdx, subIdx, paramIdx, optionIdx) => {
+  const deleteOption = (catIdx, subIdx, paramIdx, optionId) => {
     if (!window.confirm("Delete option?")) return;
     setCategories((prev) =>
       prev.map((c, i) =>
@@ -393,7 +504,7 @@ export const Categories = () => {
                           ? {
                               ...p,
                               options: p.options.filter(
-                                (_, z) => z !== optionIdx
+                                (o) => o.id !== optionId
                               ),
                             }
                           : p
@@ -405,14 +516,7 @@ export const Categories = () => {
           : c
       )
     );
-    setSelectedOption((s) =>
-      clampIndex(
-        s,
-        categories[selectedCategory]?.subCategories[
-          selectedSubCategory
-        ]?.parameters[selectedParameter]?.options?.slice(0, -1) || []
-      )
-    );
+    setSelectedOptionId((prev) => (prev === optionId ? null : prev));
   };
 
   /* ------------- Drag handling ------------- */
@@ -496,7 +600,8 @@ export const Categories = () => {
     }
 
     if (activeType === "option") {
-      const parentSlug = active.data.current.parent; // `${catSlug}::${subSlug}::${paramSlug}`
+      // parentSlug: `${catSlug}::${subSlug}::${paramSlug}`
+      const parentSlug = active.data.current.parent;
       const [catSlug, subSlug, paramSlug] = parentSlug.split("::");
       const catIndex = categories.findIndex((c) => c.slug === catSlug);
       if (catIndex === -1) return;
@@ -509,15 +614,13 @@ export const Categories = () => {
       ].parameters.findIndex((p) => p.slug === paramSlug);
       if (paramIndex === -1) return;
 
-      const a = active.id; // option ids are like option--<index> (we used index for options)
-      const b = over.id;
-      // For options we used numeric indices in ids so we need to use positions instead.
       const opts =
         categories[catIndex].subCategories[subIndex].parameters[paramIndex]
           .options;
-      const oldIdx = parseInt(a.split("--")[1], 10);
-      const newIdx = parseInt(b.split("--")[1], 10);
-      if (Number.isNaN(oldIdx) || Number.isNaN(newIdx)) return;
+      const oldIdx = opts.findIndex((o) => o.id === active.id);
+      const newIdx = opts.findIndex((o) => o.id === over.id);
+      if (oldIdx === -1 || newIdx === -1) return;
+
       setCategories((prev) =>
         prev.map((c, i) =>
           i === catIndex
@@ -551,44 +654,42 @@ export const Categories = () => {
     if (!term) return;
     const q = term.toLowerCase();
 
-    // search categories
     for (let i = 0; i < categories.length; i++) {
       const c = categories[i];
       if (c.category.toLowerCase().includes(q) || c.slug.includes(q)) {
-        setSelectedCategory(i);
-        setSelectedSubCategory(0);
-        setSelectedParameter(0);
-        setSelectedOption(0);
+        setSelectedCategorySlug(c.slug);
+        setSelectedSubCategorySlug(c.subCategories?.[0]?.slug ?? null);
+        setSelectedParameterSlug(
+          c.subCategories?.[0]?.parameters?.[0]?.slug ?? null
+        );
+        setSelectedOptionId(null);
         return;
       }
-      // search subcategories
       for (let j = 0; j < (c.subCategories || []).length; j++) {
         const s = c.subCategories[j];
         if (s.name.toLowerCase().includes(q) || s.slug.includes(q)) {
-          setSelectedCategory(i);
-          setSelectedSubCategory(j);
-          setSelectedParameter(0);
-          setSelectedOption(0);
+          setSelectedCategorySlug(c.slug);
+          setSelectedSubCategorySlug(s.slug);
+          setSelectedParameterSlug(s.parameters?.[0]?.slug ?? null);
+          setSelectedOptionId(null);
           return;
         }
-        // search parameters
         for (let k = 0; k < (s.parameters || []).length; k++) {
           const p = s.parameters[k];
           if (p.name.toLowerCase().includes(q) || p.slug.includes(q)) {
-            setSelectedCategory(i);
-            setSelectedSubCategory(j);
-            setSelectedParameter(k);
-            setSelectedOption(0);
+            setSelectedCategorySlug(c.slug);
+            setSelectedSubCategorySlug(s.slug);
+            setSelectedParameterSlug(p.slug);
+            setSelectedOptionId(null);
             return;
           }
-          // search options
           for (let z = 0; z < (p.options || []).length; z++) {
             const o = p.options[z];
-            if (String(o).toLowerCase().includes(q)) {
-              setSelectedCategory(i);
-              setSelectedSubCategory(j);
-              setSelectedParameter(k);
-              setSelectedOption(z);
+            if (String(o.value).toLowerCase().includes(q)) {
+              setSelectedCategorySlug(c.slug);
+              setSelectedSubCategorySlug(s.slug);
+              setSelectedParameterSlug(p.slug);
+              setSelectedOptionId(o.id);
               return;
             }
           }
@@ -597,12 +698,38 @@ export const Categories = () => {
     }
   };
 
-  /* ------------- Derived lists for rendering ------------- */
-  const selectedCatObj = categories[selectedCategory] || categories[0] || null;
+  /* ------------- Derived lists for rendering (indices computed from slugs) ------------- */
+  const selectedCategoryIndex = useMemo(
+    () => categories.findIndex((c) => c.slug === selectedCategorySlug),
+    [categories, selectedCategorySlug]
+  );
+
+  const selectedSubCategoryIndex = useMemo(() => {
+    if (selectedCategoryIndex === -1) return -1;
+    const subs = categories[selectedCategoryIndex]?.subCategories || [];
+    return subs.findIndex((s) => s.slug === selectedSubCategorySlug);
+  }, [categories, selectedCategoryIndex, selectedSubCategorySlug]);
+
+  const selectedParameterIndex = useMemo(() => {
+    if (selectedCategoryIndex === -1 || selectedSubCategoryIndex === -1)
+      return -1;
+    const params =
+      categories[selectedCategoryIndex]?.subCategories[selectedSubCategoryIndex]
+        ?.parameters || [];
+    return params.findIndex((p) => p.slug === selectedParameterSlug);
+  }, [
+    categories,
+    selectedCategoryIndex,
+    selectedSubCategoryIndex,
+    selectedParameterSlug,
+  ]);
+
+  const selectedCatObj =
+    categories[selectedCategoryIndex] || categories[0] || null;
   const selectedSubObj =
-    selectedCatObj?.subCategories?.[selectedSubCategory] || null;
+    selectedCatObj?.subCategories?.[selectedSubCategoryIndex] || null;
   const selectedParamObj =
-    selectedSubObj?.parameters?.[selectedParameter] || null;
+    selectedSubObj?.parameters?.[selectedParameterIndex] || null;
 
   /* ------------- Render ------------- */
   return (
@@ -636,6 +763,7 @@ export const Categories = () => {
               >
                 {categories.map((category, idx) => {
                   const id = makeId("category", category.slug);
+                  const active = category.slug === selectedCategorySlug;
                   return (
                     <SortableListItem
                       key={id}
@@ -644,8 +772,22 @@ export const Categories = () => {
                       parentSlug={null}
                       onEdit={() => editCategory(idx)}
                       onDelete={() => deleteCategory(idx)}
+                      active={active}
                     >
-                      <p>{category.category}</p>
+                      <div
+                        role="button"
+                        onClick={() => {
+                          setSelectedCategorySlug(category.slug);
+                          // set defaults for sub/param
+                          const firstSub = category.subCategories?.[0];
+                          setSelectedSubCategorySlug(firstSub?.slug ?? null);
+                          const firstParam = firstSub?.parameters?.[0];
+                          setSelectedParameterSlug(firstParam?.slug ?? null);
+                          setSelectedOptionId(null);
+                        }}
+                      >
+                        <p>{category.category}</p>
+                      </div>
                     </SortableListItem>
                   );
                 })}
@@ -666,18 +808,32 @@ export const Categories = () => {
                 {(selectedCatObj?.subCategories || []).map(
                   (subCategory, idx) => {
                     const id = makeId("sub", subCategory.slug);
+                    const active = subCategory.slug === selectedSubCategorySlug;
                     return (
                       <SortableListItem
                         key={id}
                         id={id}
                         type="sub"
                         parentSlug={selectedCatObj?.slug}
-                        onEdit={() => editSubCategory(selectedCategory, idx)}
-                        onDelete={() =>
-                          deleteSubCategory(selectedCategory, idx)
+                        onEdit={() =>
+                          editSubCategory(selectedCategoryIndex, idx)
                         }
+                        onDelete={() =>
+                          deleteSubCategory(selectedCategoryIndex, idx)
+                        }
+                        active={active}
                       >
-                        <p>{subCategory.name}</p>
+                        <div
+                          role="button"
+                          onClick={() => {
+                            setSelectedSubCategorySlug(subCategory.slug);
+                            const firstParam = subCategory.parameters?.[0];
+                            setSelectedParameterSlug(firstParam?.slug ?? null);
+                            setSelectedOptionId(null);
+                          }}
+                        >
+                          <p>{subCategory.name}</p>
+                        </div>
                       </SortableListItem>
                     );
                   }
@@ -698,6 +854,7 @@ export const Categories = () => {
               >
                 {(selectedSubObj?.parameters || []).map((parameter, idx) => {
                   const id = makeId("param", parameter.slug);
+                  const active = parameter.slug === selectedParameterSlug;
                   // parent slug encode cat::sub so reorder knows the parent
                   return (
                     <SortableListItem
@@ -707,20 +864,29 @@ export const Categories = () => {
                       parentSlug={`${selectedCatObj?.slug}::${selectedSubObj?.slug}`}
                       onEdit={() =>
                         editParameter(
-                          selectedCategory,
-                          selectedSubCategory,
+                          selectedCategoryIndex,
+                          selectedSubCategoryIndex,
                           idx
                         )
                       }
                       onDelete={() =>
                         deleteParameter(
-                          selectedCategory,
-                          selectedSubCategory,
+                          selectedCategoryIndex,
+                          selectedSubCategoryIndex,
                           idx
                         )
                       }
+                      active={active}
                     >
-                      <p>{parameter.name}</p>
+                      <div
+                        role="button"
+                        onClick={() => {
+                          setSelectedParameterSlug(parameter.slug);
+                          setSelectedOptionId(null);
+                        }}
+                      >
+                        <p>{parameter.name}</p>
+                      </div>
                     </SortableListItem>
                   );
                 })}
@@ -732,15 +898,13 @@ export const Categories = () => {
           <div className={styles.column}>
             <div className={styles.itemHeader}>Options</div>
             <div className={styles.items}>
-              {/* For options we must produce stable ids; use option index as id suffix */}
               <SortableContext
-                items={(selectedParamObj?.options || []).map((_, idx) =>
-                  makeId("option", String(idx))
-                )}
+                items={(selectedParamObj?.options || []).map((o) => o.id)}
                 strategy={verticalListSortingStrategy}
               >
                 {(selectedParamObj?.options || []).map((option, idx) => {
-                  const id = makeId("option", String(idx)); // option--<index>
+                  const id = option.id; // stable id
+                  const active = option.id === selectedOptionId;
                   return (
                     <SortableListItem
                       key={id}
@@ -749,22 +913,28 @@ export const Categories = () => {
                       parentSlug={`${selectedCatObj?.slug}::${selectedSubObj?.slug}::${selectedParamObj?.slug}`}
                       onEdit={() =>
                         editOption(
-                          selectedCategory,
-                          selectedSubCategory,
-                          selectedParameter,
-                          idx
+                          selectedCategoryIndex,
+                          selectedSubCategoryIndex,
+                          selectedParameterIndex,
+                          id
                         )
                       }
                       onDelete={() =>
                         deleteOption(
-                          selectedCategory,
-                          selectedSubCategory,
-                          selectedParameter,
-                          idx
+                          selectedCategoryIndex,
+                          selectedSubCategoryIndex,
+                          selectedParameterIndex,
+                          id
                         )
                       }
+                      active={active}
                     >
-                      <p>{option}</p>
+                      <div
+                        role="button"
+                        onClick={() => setSelectedOptionId(id)}
+                      >
+                        <p>{option.value}</p>
+                      </div>
                     </SortableListItem>
                   );
                 })}
@@ -786,9 +956,11 @@ export const Categories = () => {
             />
             <button
               className={styles.saveButton}
-              onClick={() =>
-                newCategoryName.trim() && addCategory(newCategoryName.trim())
-              }
+              onClick={() => {
+                if (!newCategoryName.trim()) return;
+                addCategory(newCategoryName.trim());
+              }}
+              type="button"
             >
               Save
             </button>
@@ -797,8 +969,10 @@ export const Categories = () => {
           <div className={styles.inputColumn}>
             <div className={styles.dropdownButton}>
               <p>{selectedCatObj?.category || "Category"}</p>
-              <button onClick={() => setOpenCategoryModal((p) => !p)}>
-                {/* your caret */}
+              <button
+                type="button"
+                onClick={() => setOpenCategoryModal((p) => !p)}
+              >
                 <span style={{ display: "inline-block" }}>
                   <Caret />
                 </span>
@@ -826,11 +1000,11 @@ export const Categories = () => {
                           .toLowerCase()
                           .includes(modalSearchCategory.toLowerCase())
                     )
-                    .map((category, idx) => (
+                    .map((category) => (
                       <li
                         key={category.slug}
                         onClick={() => {
-                          setSelectedCategory(idx);
+                          setSelectedCategorySlug(category.slug);
                           setOpenCategoryModal(false);
                         }}
                       >
@@ -838,7 +1012,10 @@ export const Categories = () => {
                       </li>
                     ))}
                 </ul>
-                <button onClick={() => setOpenCategoryModal(false)}>
+                <button
+                  type="button"
+                  onClick={() => setOpenCategoryModal(false)}
+                >
                   Select
                 </button>
               </div>
@@ -856,8 +1033,9 @@ export const Categories = () => {
               className={styles.saveButton}
               onClick={() => {
                 if (!newSubCategoryName.trim()) return;
-                addSubCategory(selectedCategory, newSubCategoryName.trim());
+                addSubCategory(selectedCategorySlug, newSubCategoryName.trim());
               }}
+              type="button"
             >
               Save
             </button>
@@ -866,7 +1044,10 @@ export const Categories = () => {
           <div className={styles.inputColumn}>
             <div className={styles.dropdownButton}>
               <p>{selectedSubObj?.name || "Sub-category"}</p>
-              <button onClick={() => setOpenSubCategoryModal((p) => !p)}>
+              <button
+                type="button"
+                onClick={() => setOpenSubCategoryModal((p) => !p)}
+              >
                 <Caret />
               </button>
             </div>
@@ -892,11 +1073,11 @@ export const Categories = () => {
                           .toLowerCase()
                           .includes(modalSearchSubCategory.toLowerCase())
                     )
-                    .map((subCategory, idx) => (
+                    .map((subCategory) => (
                       <li
                         key={subCategory.slug}
                         onClick={() => {
-                          setSelectedSubCategory(idx);
+                          setSelectedSubCategorySlug(subCategory.slug);
                           setOpenSubCategoryModal(false);
                         }}
                       >
@@ -904,7 +1085,10 @@ export const Categories = () => {
                       </li>
                     ))}
                 </ul>
-                <button onClick={() => setOpenSubCategoryModal(false)}>
+                <button
+                  type="button"
+                  onClick={() => setOpenSubCategoryModal(false)}
+                >
                   Select
                 </button>
               </div>
@@ -923,11 +1107,12 @@ export const Categories = () => {
               onClick={() => {
                 if (!newParameterName.trim()) return;
                 addParameter(
-                  selectedCategory,
-                  selectedSubCategory,
+                  selectedCategorySlug,
+                  selectedSubCategorySlug,
                   newParameterName.trim()
                 );
               }}
+              type="button"
             >
               Save
             </button>
@@ -936,7 +1121,10 @@ export const Categories = () => {
           <div className={styles.inputColumn}>
             <div className={styles.dropdownButton}>
               <p>{selectedParamObj?.name || "Parameter"}</p>
-              <button onClick={() => setOpenParameterModal((p) => !p)}>
+              <button
+                type="button"
+                onClick={() => setOpenParameterModal((p) => !p)}
+              >
                 <Caret />
               </button>
             </div>
@@ -962,11 +1150,11 @@ export const Categories = () => {
                           .toLowerCase()
                           .includes(modalSearchParameter.toLowerCase())
                     )
-                    .map((param, idx) => (
+                    .map((param) => (
                       <li
                         key={param.slug}
                         onClick={() => {
-                          setSelectedParameter(idx);
+                          setSelectedParameterSlug(param.slug);
                           setOpenParameterModal(false);
                         }}
                       >
@@ -974,7 +1162,10 @@ export const Categories = () => {
                       </li>
                     ))}
                 </ul>
-                <button onClick={() => setOpenParameterModal(false)}>
+                <button
+                  type="button"
+                  onClick={() => setOpenParameterModal(false)}
+                >
                   Select
                 </button>
               </div>
@@ -993,12 +1184,13 @@ export const Categories = () => {
               onClick={() => {
                 if (!newOptionName.trim()) return;
                 addOption(
-                  selectedCategory,
-                  selectedSubCategory,
-                  selectedParameter,
+                  selectedCategorySlug,
+                  selectedSubCategorySlug,
+                  selectedParameterSlug,
                   newOptionName.trim()
                 );
               }}
+              type="button"
             >
               Save
             </button>
