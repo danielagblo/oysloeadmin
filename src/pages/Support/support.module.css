@@ -1,0 +1,165 @@
+.supportContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--content-padding);
+  padding: var(--content-padding);
+  padding-right: 0;
+}
+
+.actualChatBox,
+.allChatBox {
+  width: 100%;
+}
+
+.actualChatBox {
+  width: 65%;
+}
+
+.allChatBox {
+  width: 35%;
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  display: flex;
+  justify-content: flex-start;
+  align-items: stretch;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+  padding: var(--content-padding);
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
+  position: sticky;
+  top: var(--header-height);
+}
+
+.casesContainer {
+  margin-block: 2rem;
+}
+
+.searchBox {
+  border: 3px solid var(--color-muted-1);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 var(--content-padding);
+}
+
+.searchBox input {
+  border: none;
+  outline: none;
+  background-color: transparent;
+}
+
+.dropDown {
+  display: flex;
+  position: relative;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: var(--content-padding) calc(var(--content-padding) * 2);
+  background-color: var(--color-bg);
+  border-radius: var(--radius-xl);
+}
+.dropDown button {
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-full);
+  padding: 5px;
+  display: grid;
+}
+
+.case {
+  display: flex;
+  align-items: center;
+  gap: var(--content-padding);
+  padding: var(--content-padding);
+}
+
+.activeCase {
+  background-color: white;
+}
+
+.imageBox {
+  width: 60px;
+  height: 60px;
+  position: relative;
+}
+
+.imageBox img {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-full);
+}
+
+.active {
+  width: 15px;
+  height: 15px;
+  background-color: var(--color-theme-green);
+  display: block;
+  border-radius: var(--radius-full);
+  position: absolute;
+  bottom: 5%;
+  right: 5%;
+  border: 3px solid var(--color-bg-secondary);
+}
+
+.textBox {
+  width: 70%;
+}
+
+.count {
+  background-color: var(--color-text);
+  color: var(--color-bg-secondary);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  display: grid;
+  place-content: center;
+}
+
+.lastMessage {
+  font-size: 0.8rem;
+}
+
+.closed {
+  font-size: 0.7rem;
+  color: var(--color-bg-secondary);
+  background-color: var(--color-theme-red);
+  width: fit-content;
+  padding: 1px 5px;
+  margin-block: 5px;
+}
+
+.addButton {
+  background-color: var(--color-bg);
+  width: fit-content;
+  margin: calc(2 * var(--content-padding));
+  margin-left: auto;
+  padding: var(--content-padding);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--content-padding);
+  border-radius: var(--radius-md);
+}
+
+.addButton p {
+  color: var(--color-muted);
+}
+
+.addButton span {
+  background-color: var(--color-theme-green);
+  padding: var(--content-padding);
+  border-radius: var(--radius-full);
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-content: center;
+}
