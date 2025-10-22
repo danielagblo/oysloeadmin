@@ -80,6 +80,8 @@ export const Support = () => {
   const [newMessage, setNewMessage] = useState("");
   const fileInputRef = useRef(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [openFilter, setOpenFilter] = useState(false);
+  const [openUsersModal, setOpenUsersModal] = useState(false);
   const mediaRecorderRef = useRef(null);
   const recordedChunksRef = useRef([]);
 
@@ -223,17 +225,34 @@ export const Support = () => {
 
           {/* simple filter toggle button (no overlay menu). user asked overlays removed */}
           <div className={styles.dropDown}>
+            <span>{filterOption}</span>
+
             <button
               type="button"
               onClick={() => {
-                // placeholder — user will place dropdown UI themselves
-                console.info("Filter toggle clicked (implement dropdown UI)");
+                setOpenFilter((prev) => !prev);
               }}
               className={styles.dropToggle}
             >
-              <span>{filterOption}</span>
               <Caret />
             </button>
+            {openFilter && (
+              <ul className={styles.filterMenu}>
+                {["All", "Open", "Closed", "Unread", "Recent"].map((p, i) => (
+                  <li
+                    key={i}
+                    role="menuitem"
+                    className={p === filterOption ? styles.timeActive : ""}
+                    onClick={() => {
+                      setFilterOption(p);
+                      setOpenFilter(false);
+                    }}
+                  >
+                    {p}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
 
@@ -280,10 +299,7 @@ export const Support = () => {
         <button
           className={styles.addButton}
           onClick={() => {
-            // overlays removed — provide a hook for you to implement your own modal
-            console.info(
-              "Make case clicked — implement your modal/overlay here"
-            );
+            setOpenUsersModal((prev) => !prev);
           }}
         >
           <p>Make case</p>
@@ -300,7 +316,7 @@ export const Support = () => {
             <button type="button" onClick={() => setSelectedCaseId(null)}>
               <Caret />
             </button>
-            <p>Make case</p>
+            <p>Back</p>
           </div>
 
           <div>
@@ -579,6 +595,99 @@ export const Support = () => {
           )}
         </div>
       </div>
+
+      {openUsersModal && (
+        <div className={styles.addCaseModalContainer}>
+          <div className={styles.overlay}>
+            <div className={styles.overlayContent}>
+              <div className={styles.header}>
+                <div onSubmit={handleSearchSubmit} className={styles.searchBox}>
+                  <button
+                    type="submit"
+                    aria-label="Search"
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      padding: 4,
+                    }}
+                  >
+                    <SearchIcon />
+                  </button>
+                  <input
+                    type="search"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search cases"
+                    className={styles.searchBoxInput}
+                    aria-label="Search cases"
+                  />
+                </div>
+
+                {/* simple filter toggle button (no overlay menu). user asked overlays removed */}
+                <div className={styles.dropDown}>
+                  <span>{filterOption}</span>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpenFilter((prev) => !prev);
+                    }}
+                    className={styles.dropToggle}
+                  >
+                    <Caret />
+                  </button>
+                  {openFilter && (
+                    <ul className={styles.filterMenu}>
+                      {["All", "Open", "Closed", "Unread", "Recent"].map(
+                        (p, i) => (
+                          <li
+                            key={i}
+                            role="menuitem"
+                            className={
+                              p === filterOption ? styles.timeActive : ""
+                            }
+                            onClick={() => {
+                              setFilterOption(p);
+                              setOpenFilter(false);
+                            }}
+                          >
+                            {p}
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  )}
+                </div>
+              </div>
+              <ul className={styles.userItemList}>
+                {users?.map((user, idx) => (
+                  <li key={idx} className={styles.userItem}>
+                    <img src={user?.avatar} />
+                    <div className={styles.info}>
+                      <p>{user?.name}</p>
+                      <p>Company</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <button
+                className={styles.addButton}
+                onClick={() => {
+                  setOpenUsersModal((prev) => !prev);
+                }}
+              >
+                <p>
+                  Broadcast <b>{users?.length}</b>
+                </p>
+                <span>
+                  <PlusIcon size={15} />
+                </span>
+              </button>
+              <button>Select</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
