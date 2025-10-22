@@ -13,6 +13,8 @@
 
 .allChatBox {
   width: 35%;
+  max-height: 80dvh;
+
   background-color: var(--color-bg-secondary);
   border-radius: var(--radius-md);
   display: flex;
@@ -29,7 +31,7 @@
   padding: var(--content-padding);
   border-top-left-radius: var(--radius-md);
   border-top-right-radius: var(--radius-md);
-  position: sticky;
+  /* position: sticky; */
   top: var(--header-height);
 }
 
@@ -140,6 +142,7 @@
   width: fit-content;
   margin: calc(2 * var(--content-padding));
   margin-left: auto;
+  margin-top: auto;
   padding: var(--content-padding);
   display: flex;
   justify-content: space-between;
@@ -164,6 +167,7 @@
 
 .actualChatBox {
   width: 65%;
+  max-height: 80dvh;
   border-radius: var(--radius-md);
   background-color: var(--color-bg-secondary);
 }
@@ -228,7 +232,7 @@
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  /* gap: 10rem; */
   background: transparent;
 }
 
@@ -243,24 +247,18 @@
 /* message row */
 .messageRow {
   display: flex;
-  align-items: flex-end;
-  gap: 0.75rem;
+  justify-content: flex-end;
+  position: relative !important;
+  flex-direction: column;
 }
 
 /* incoming = left, outgoing = right */
 .incoming {
-  justify-content: flex-start;
+  align-items: flex-start;
 }
 
 .outgoing {
-  justify-content: flex-end;
-}
-
-/* small avatar besides messages */
-.messageAvatar img {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-full);
+  align-items: flex-end;
 }
 
 /* bubble */
@@ -272,14 +270,49 @@
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
   position: relative;
   display: flex;
+  justify-content: center;
+  align-items: center;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.incoming .messageBubble {
+  border-top-left-radius: 0;
+}
+
+.outgoing .messageBubble {
+  border-top-right-radius: 0;
+}
+
+/* small avatar besides messages */
+.messageAvatar img {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  position: absolute;
+  top: -5px;
+  z-index: 10;
+}
+
+.incoming .messageAvatar img {
+  left: -2px;
+}
+
+.outgoing .messageAvatar img {
+  right: -2px;
 }
 
 /* outgoing bubble color */
 .outgoing .messageBubble {
   background-color: var(--color-theme-green);
-  color: var(--color-bg-secondary);
+}
+
+.incoming .senderName {
+  margin-left: 5%;
+}
+
+.outgoing .senderName {
+  margin-right: 5%;
 }
 
 /* message text */
@@ -290,9 +323,13 @@
 
 /* attachments */
 .attachmentImage {
-  max-width: 100%;
-  border-radius: 8px;
   display: block;
+  max-width: 50%;
+  min-width: 100px;
+  height: auto;
+  width: auto;
+
+  border-radius: 8px;
 }
 
 .attachmentAudio {
@@ -307,6 +344,8 @@
   gap: 0.5rem;
   font-size: 0.75rem;
   color: var(--color-muted);
+  margin-bottom: 5em;
+  margin-top: 0.5rem;
 }
 
 /* time and seen check */
@@ -322,4 +361,55 @@
 /* end spacer for autoscroll */
 .messagesEnd {
   height: 1px;
+}
+
+.chatInputs {
+  border-top: 1px solid rgba(55, 73, 87, 0.3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--content-padding);
+  padding: var(--content-padding);
+}
+
+.picInputSend {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius-ml);
+  height: 100%;
+}
+.picInputSend button {
+  padding: var(--content-padding);
+}
+
+.picInputSend input {
+  width: 100%;
+  border: none;
+  outline: none;
+}
+
+.recordButton,
+.recording {
+  width: 50px;
+  height: 100%;
+  border: 1px solid var(--color-muted);
+  display: grid;
+  place-content: center;
+  border-radius: var(--radius-ml);
+}
+
+.recording {
+  animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+  from {
+    scale: 1;
+  }
+  to {
+    scale: 0.8;
+  }
 }
