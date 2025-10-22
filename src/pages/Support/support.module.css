@@ -14,7 +14,6 @@
 .allChatBox {
   width: 35%;
   max-height: 80dvh;
-
   background-color: var(--color-bg-secondary);
   border-radius: var(--radius-md);
   display: flex;
@@ -36,7 +35,9 @@
 }
 
 .casesContainer {
-  margin-block: 2rem;
+  margin-block: 1rem;
+  height: 60dvh;
+  overflow: scroll;
 }
 
 .searchBox {
@@ -79,6 +80,7 @@
   align-items: center;
   gap: var(--content-padding);
   padding: var(--content-padding);
+  cursor: pointer;
 }
 
 .activeCase {
