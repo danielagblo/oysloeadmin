@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import styles from "./settings.module.css";
 import { Caret } from "../../components/SVGIcons/Caret";
+import { settingsData } from "../../api/settings";
+import { formatChatTimestamp } from "../../utils/numConverters";
 
 export const Settings = () => {
   const [selectedSetting, setSelectedSetting] = useState("privacyPolicy");
@@ -50,8 +52,30 @@ export const Settings = () => {
                   ?.name
               }
             </h1>
-            <p>Dated 21 June 2025</p>
-            <textarea />
+            <p>Dated {settingsData?.privacyPolicy?.date}</p>
+            <textarea value={settingsData[selectedSetting]?.content} />
+          </div>
+        ) : selectedSetting === "feedback" ? (
+          <div className={styles.feedbackContainer}>
+            <div className={styles.feedbackHeader}>Header</div>
+            <ul className={styles.feedbackBox}>
+              {settingsData?.feedback?.map((feedback, idx) => (
+                <li key={idx} className={styles.feedback}>
+                  <div className={styles.feedbackItemHeader}>
+                    <div className={styles.feedbackGiver}>
+                      <img src={feedback?.avatar} />
+                      <p>{feedback?.name}</p>
+                    </div>
+                  </div>
+                  <div className={styles.feedbackComments}>
+                    {feedback?.comment}
+                  </div>
+                  <div className={styles.time}>
+                    {formatChatTimestamp(feedback?.timeStamp)}
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         ) : (
           <></>

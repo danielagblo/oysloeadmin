@@ -75,3 +75,25 @@
   border: none;
   outline: none;
 }
+
+.feedbackBox,
+.feedbackContainer {
+  border: 2px solid green;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column;
+  gap: var(--content-padding);
+  width: 100%;
+}
+
+.feedbackItemHeader {
+  border: 2px solid red;
+}
+
+.feedback {
+  width: 80%;
+  background-color: var(--color-bg);
+  padding: var(--content-padding);
+  border-radius: var(--radius-ml);
+}
