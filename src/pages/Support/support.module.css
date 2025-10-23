@@ -161,10 +161,11 @@
   margin-block: 5px;
 }
 
-.addButton {
+.addButton,
+.broadcastButton {
   background-color: var(--color-bg);
   width: fit-content;
-  margin: calc(2 * var(--content-padding));
+  /* margin: calc(2 * var(--content-padding)); */
   margin-left: auto;
   margin-top: auto;
   padding: var(--content-padding);
@@ -175,11 +176,13 @@
   border-radius: var(--radius-md);
 }
 
-.addButton p {
+.addButton,
+.broadcastButton p {
   color: var(--color-muted);
 }
 
-.addButton span {
+.addButton span,
+.broadcastButton span {
   background-color: var(--color-theme-green);
   padding: var(--content-padding);
   border-radius: var(--radius-full);
@@ -498,4 +501,70 @@
   width: 60px;
   height: 60px;
   border-radius: var(--radius-full);
+}
+.selectionRadio {
+  margin-left: auto;
+  scale: 2;
+}
+
+.buttonsTray {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-left: auto;
+  width: fit-content;
+  gap: var(--content-padding);
+  padding: var(--content-padding);
+}
+
+.broadcastButton {
+  margin: 0;
+  text-wrap: nowrap;
+  accent-color: var(--color-theme-green) !important;
+}
+
+.selectButton {
+  padding: var(--content-padding) 20px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-theme-green);
+  width: 100%;
+  height: 100%;
+  text-align: center;
+}
+
+.broadcastMainButton {
+  background-color: var(--color-bg);
+  color: var(--color-muted);
+}
+
+/* checkbox styling (small) */
+.selectionRadio {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-theme-green);
+}
+
+.boradCastModalContainer {
+  max-width: 430px;
+  height: 70%;
+  position: absolute;
+  background-color: var(--color-bg-secondary);
+  display: flex;
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.1);
+}
+
+.boradCastModalContainer .chatMessagesContainer {
+  height: 100%;
+}
+
+.closeBroadcast {
+  background-color: var(--color-theme-red);
+  display: grid;
+  place-content: center;
+  position: absolute;
+  right: -5px;
+  top: -5px;
+  border-radius: var(--radius-full);
+  padding: calc(0.5 * var(--content-padding));
 }

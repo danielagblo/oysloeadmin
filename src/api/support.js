@@ -97,6 +97,14 @@ export const supportData = {
       online: false,
       avatar: "https://randomuser.me/api/portraits/men/55.jpg",
     },
+    {
+      id: "u13",
+      name: "Gordon Mensah",
+      role: "customer",
+      verified: true,
+      online: true,
+      avatar: "https://randomuser.me/api/portraits/men/69.jpg",
+    },
   ],
 
   cases: [
