@@ -1,0 +1,77 @@
+.settingsContainer {
+  padding: var(--content-padding);
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: var(--content-padding);
+}
+
+.settingsListBox,
+.settingBox {
+  width: 100%;
+  height: calc(100dvh - var(--header-height) - (2 * var(--content-padding)));
+  border-radius: var(--radius-md);
+}
+
+.settingsListBox {
+  width: 30%;
+  border: 1px solid var(--color-bg-secondary);
+  background-color: var(--color-bg-secondary);
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.settingBox {
+  width: 70%;
+}
+
+.setting,
+.active {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: var(--content-padding);
+  background-color: white;
+  cursor: pointer;
+}
+
+.active {
+  background-color: var(--color-bg);
+}
+
+.setting span {
+  rotate: -90deg;
+  scale: 1.2;
+}
+
+.settingBox,
+.tcpContent {
+  padding: var(--content-padding);
+  background-color: var(--color-bg-secondary);
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: var(--content-padding);
+}
+.tcpContent {
+  width: 100%;
+  height: 100dvh;
+  padding: 0;
+}
+
+.tcpContent h1 {
+  font-weight: normal;
+}
+
+.settingBox textarea {
+  width: 100%;
+  height: calc(90dvh - var(--header-height) - (4 * var(--content-padding)));
+  background-color: transparent;
+  border: none;
+  outline: none;
+}
