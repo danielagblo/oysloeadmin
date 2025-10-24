@@ -78,6 +78,7 @@
 
 .feedbackContainer {
   overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 .feedbackHeader {
@@ -124,6 +125,7 @@
   background-color: var(--color-bg);
   padding: var(--content-padding);
   border-radius: var(--radius-ml);
+  position: relative;
 }
 
 .feedbackGiver img {
@@ -164,6 +166,7 @@
 .filterMenu {
   position: absolute;
   top: 100%;
+  right: 5%;
   background-color: var(--color-bg-secondary);
   z-index: 100;
   padding: var(--content-padding);
@@ -180,4 +183,73 @@
 
 .emptyRow {
   height: 20rem;
+}
+
+.reporterReportee {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* border: 2px solid red; */
+  gap: 1rem;
+}
+
+.resolveButton,
+.showButton {
+  padding: 5px var(--content-padding);
+  background-color: var(--color-theme-red);
+  border-radius: var(--radius-md);
+  color: white;
+}
+
+.showButton {
+  background-color: #ffecec;
+  color: var(--color-theme-red);
+}
+
+.resolveBox {
+  position: absolute;
+  width: 250px;
+  height: 350px;
+  background-color: var(--color-bg);
+  box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-md);
+  padding: var(--content-padding);
+  z-index: 100;
+  right: 0;
+  top: 40%;
+}
+
+.resolveBox textarea {
+  max-height: 240px;
+  resize: none;
+}
+
+.buttonBox {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: var(--content-padding);
+}
+
+.buttonBox button {
+  width: calc(100% - (2 * var(--content-padding)));
+  text-align: center;
+}
+
+.buttonBox button:first-child {
+  background-color: var(--color-theme-green);
+}
+
+.buttonBox button:last-child {
+  background-color: var(--color-muted);
+  color: white;
+}
+
+.resolvedTime {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
 }

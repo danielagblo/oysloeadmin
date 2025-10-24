@@ -141,6 +141,9 @@ export const settingsData = {
       reason: "User posted misleading product information.",
       status: "Pending",
       createdAt: "2025-10-21T09:12:00Z",
+      resolvedAt: null,
+      resolvedBy: null,
+      resolveNote: null,
     },
     {
       id: 2,
@@ -155,6 +158,10 @@ export const settingsData = {
       reason: "Offensive language used in chat.",
       status: "Resolved",
       createdAt: "2025-10-12T13:45:00Z",
+      resolvedAt: "2025-10-13T09:02:00Z",
+      resolvedBy: "Jeff07",
+      resolveNote:
+        "Reviewed conversation logs. User warned for offensive language and temporary suspension applied for repeated offenses.",
     },
     {
       id: 3,
@@ -167,8 +174,11 @@ export const settingsData = {
         avatar: "https://randomuser.me/api/portraits/men/28.jpg",
       },
       reason: "Repeated spamming of links in group channel.",
-      status: "Open",
+      status: "Pending",
       createdAt: "2025-10-08T18:30:00Z",
+      resolvedAt: null,
+      resolvedBy: null,
+      resolveNote: null,
     },
     {
       id: 4,
@@ -183,6 +193,9 @@ export const settingsData = {
       reason: "Attempted to scam users with fake product listing.",
       status: "Pending",
       createdAt: "2025-09-28T10:05:00Z",
+      resolvedAt: null,
+      resolvedBy: null,
+      resolveNote: null,
     },
   ],
 };
