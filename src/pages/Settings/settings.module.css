@@ -76,9 +76,19 @@
   outline: none;
 }
 
+.feedbackContainer {
+  overflow-y: scroll;
+}
+
+.feedbackHeader {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
 .feedbackBox,
 .feedbackContainer {
-  border: 2px solid green;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -87,8 +97,26 @@
   width: 100%;
 }
 
+.feedbackBox {
+  gap: 2rem;
+}
+
+.feedbackItemHeader,
+.feedbackGiver {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--content-padding);
+}
+
 .feedbackItemHeader {
-  border: 2px solid red;
+  margin-bottom: 2rem;
+}
+
+.feedbackGiver {
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--content-padding);
 }
 
 .feedback {
@@ -96,4 +124,60 @@
   background-color: var(--color-bg);
   padding: var(--content-padding);
   border-radius: var(--radius-ml);
+}
+
+.feedbackGiver img {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-full);
+}
+
+.time {
+  width: 100%;
+  text-align: right;
+  font-size: 0.8rem;
+}
+
+.dropDown,
+.backButton {
+  display: flex;
+  position: relative;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: var(--content-padding) calc(var(--content-padding) * 2);
+  background-color: var(--color-bg);
+  border-radius: var(--radius-xl);
+}
+.dropDown button,
+.backButton button {
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-full);
+  padding: 5px;
+  display: grid;
+}
+
+.dropDown {
+  position: relative;
+}
+
+.filterMenu {
+  position: absolute;
+  top: 100%;
+  background-color: var(--color-bg-secondary);
+  z-index: 100;
+  padding: var(--content-padding);
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: var(--content-padding);
+}
+
+.filterMenu li {
+  cursor: pointer;
+}
+
+.emptyRow {
+  height: 20rem;
 }
