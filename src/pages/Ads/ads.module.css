@@ -1,6 +1,12 @@
 .adsContainer {
   padding: var(--content-padding);
   padding-right: 0;
+  position: relative;
+}
+
+.header {
+  position: sticky;
+  top: 0;
 }
 
 .header,
@@ -62,4 +68,63 @@
   border: none;
   /* border: 2px solid red; */
   padding: calc(var(--content-padding) + 3px);
+}
+
+.count {
+  width: 100%;
+  text-align: right;
+  padding-block: var(--content-padding);
+}
+
+.adsPreivewTable,
+.adRow {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--content-padding);
+  flex-direction: column;
+  width: 100%;
+}
+
+.adInfo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--content-padding);
+}
+
+.adRow {
+  flex-direction: row;
+  padding: var(--content-padding);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-ml);
+  cursor: pointer;
+}
+
+.thumb {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-ml);
+}
+
+.userAvater {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-full);
+}
+
+.adSellerInfo {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  flex-direction: column;
+  padding: var(--content-padding);
+}
+
+.adSellerUserData {
+  font-size: 0.9rem;
+  font-weight: lighter;
+}
+
+.adSellerUserData span {
+  font-weight: 500;
 }
