@@ -3,6 +3,61 @@ import styles from "./ads.module.css";
 import { Caret } from "../../components/SVGIcons/Caret";
 import { SearchIcon } from "../../components/SVGIcons/SearchIcon";
 import { adsData } from "../../api/ads"; // <-- use this or fetch from API
+import { X } from "lucide-react";
+import { CheckMark } from "../../components/SVGIcons/CheckMark";
+import formatNumber from "../../utils/numConverters";
+import TrashIcon from "../../assets/TrashIcon.png";
+import ImageIcon from "../../components/SVGIcons/ImageIcon";
+
+function parseDateApplied(raw) {
+  if (!raw) return null;
+
+  // if it's already an ISO-ish createdAt
+  if (/\d{4}-\d{2}-\d{2}T/.test(raw)) {
+    const d = new Date(raw);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  // If already a Date object
+  if (raw instanceof Date) return raw;
+
+  const s = String(raw).trim().toLowerCase();
+
+  const now = new Date();
+
+  // Today 12:00 or today 9:30 pm
+  if (s.startsWith("today")) {
+    const timePart = s.replace(/^today/, "").trim();
+    if (!timePart) return new Date(now);
+    const parsed = new Date(`${now.toDateString()} ${timePart}`);
+    return isNaN(parsed.getTime()) ? new Date(now) : parsed;
+  }
+
+  // Yesterday 4:35 PM
+  if (s.startsWith("yesterday")) {
+    const timePart = s.replace(/^yesterday/, "").trim();
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    if (!timePart) return yesterday;
+    const parsed = new Date(`${yesterday.toDateString()} ${timePart}`);
+    return isNaN(parsed.getTime()) ? yesterday : parsed;
+  }
+
+  // "2 days ago" or "3 days ago"
+  const daysMatch = s.match(/(\d+)\s+days?\s+ago/);
+  if (daysMatch) {
+    const n = parseInt(daysMatch[1], 10);
+    return new Date(Date.now() - n * 24 * 60 * 60 * 1000);
+  }
+
+  // "last week"
+  if (s.includes("last week")) {
+    return new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  }
+
+  // fallback: try Date parse
+  const tryParse = new Date(raw);
+  return isNaN(tryParse.getTime()) ? null : tryParse;
+}
 
 // helper: recursively collect primitive values into an array
 function collectValues(value, out = []) {
@@ -79,7 +134,8 @@ function useDebouncedValue(value, delay = 200) {
 }
 
 export const Ads = () => {
-  const [selectedRow, setSelectedRow] = useState(null);
+  const [selectedRow, setSelectedRow] = useState(adsData[0]);
+  // const [selectedRow, setSelectedRow] = useState(null);
 
   // search + filters state
   const [searchInput, setSearchInput] = useState("");
@@ -183,6 +239,14 @@ export const Ads = () => {
     selectedUser,
   ]);
 
+  function formatKeyName(key) {
+    if (!key) return "";
+    return key
+      .replace(/([A-Z])/g, " $1")
+      .replace(/^./, (s) => s.toUpperCase())
+      .trim();
+  }
+
   // small helper render for dropdowns
   const Dropdown = ({ label, open, setOpen, options, value, onSelect }) => (
     <div className={styles.dropdownWrapper}>
@@ -268,6 +332,7 @@ export const Ads = () => {
         </div>
       </div>
 
+      {/* {selectedRow ? ( */}
       {!selectedRow ? (
         <div className={styles.table}>
           <div className={styles.count}>
@@ -319,7 +384,96 @@ export const Ads = () => {
           </ul>
         </div>
       ) : (
-        <div className={styles.adBox}></div>
+        <div className={styles.adBox}>
+          <div className={styles.adDetails}>
+            <div className={styles.headerOne}>
+              <button
+                type="button"
+                onClick={() => setSelectedRow(null)}
+                className={styles.backButton}
+              >
+                <button type="button" onClick={() => setSelectedRow(null)}>
+                  <Caret />
+                </button>
+                <p>Return</p>
+              </button>
+              <div className={styles.timeVerifiedBox}>
+                <div className={styles.time}>
+                  ~
+                  {parseDateApplied(selectedRow?.postedOn)?.toLocaleString() ||
+                    "Unknown"}
+                </div>
+                <div className={styles.isVerified}>
+                  {selectedRow?.seller?.verified ? (
+                    <div className={styles.verified}>
+                      <CheckMark />
+                      <p>Verified</p>
+                    </div>
+                  ) : (
+                    <div className={styles.notVerified}>
+                      <X />
+                      <p>Not Verified</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <ul className={styles.headerTwo}>
+              {Object.entries(selectedRow?.stats || {}).map(([key, value]) => (
+                <li key={key}>
+                  <p>
+                    {formatKeyName(key)}:{" "}
+                    <span>
+                      {formatNumber(value)}
+                      {key === "boostMultiplier" && "x"}
+                    </span>
+                  </p>
+                </li>
+              ))}
+            </ul>
+            <ul className={styles.images}>
+              {selectedRow?.images?.map((image, idx) => (
+                <li className={styles.image} key={idx}>
+                  <img src={image} className={styles.adImage} />
+                  <span className={styles.delIcon}>
+                    <button>
+                      <ImageIcon src={TrashIcon} size={20} alt="Ads Icon" />
+                    </button>
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div
+              style={{
+                margin: selectedRow?.status === "Suspended" ? "2rem" : 0,
+              }}
+            />
+            {selectedRow?.status !== "Suspended" && (
+              <div className={styles.buttonRack}>
+                <div className={styles.suspensionRack}>
+                  <textarea
+                    className={styles.explainSuspension}
+                    placeholder="Type reason for suspension"
+                  />
+                  <button
+                    className={`${styles.statusButton} ${styles.suspend}`}
+                  >
+                    Suspend
+                  </button>
+                  {selectedRow?.status === "Pending" && (
+                    <button
+                      className={`${styles.statusButton} ${styles.activate}`}
+                    >
+                      Activate Ad
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+          <div className={styles.adDetails}></div>
+          <div className={styles.adDetails}></div>
+        </div>
       )}
     </div>
   );

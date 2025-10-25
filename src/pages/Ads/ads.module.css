@@ -25,7 +25,8 @@
   gap: var(--content-padding);
 }
 
-.dropdown {
+.dropdown,
+.backButton {
   padding: 5px 10px;
   border-radius: var(--radius-xl);
   background-color: var(--color-bg);
@@ -40,7 +41,8 @@
   text-transform: capitalize;
 }
 
-.dropdown button {
+.dropdown button,
+.backButton button {
   /* padding: 5px; */
   border-radius: var(--radius-full);
   width: 30px;
@@ -106,6 +108,10 @@
   border-radius: var(--radius-ml);
 }
 
+.time {
+  font-size: 0.75rem;
+}
+
 .userAvater {
   width: 60px;
   height: 60px;
@@ -127,4 +133,161 @@
 
 .adSellerUserData span {
   font-weight: 500;
+}
+
+.adBox {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--content-padding);
+}
+
+.adDetails {
+  width: 100%;
+  padding: var(--content-padding);
+  background-color: var(--color-bg-secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column;
+  gap: var(--content-padding);
+  margin-block: var(--content-padding);
+  border-radius: var(--radius-md);
+}
+
+.adDetails:first-child {
+  width: 40%;
+}
+
+.adDetails:nth-child(2),
+.adDetails:nth-child(3) {
+  width: 30%;
+}
+
+.backButton {
+  border-radius: var(--radius-md);
+}
+
+.backButton button {
+  background-color: transparent;
+  rotate: 90deg;
+}
+
+.isVerified,
+.verified,
+.notVerified {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--content-padding);
+  padding: 5px 10px;
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+}
+
+.verified {
+  background-color: var(--color-theme-green);
+}
+
+.notVerified {
+  background-color: var(--color-theme-red);
+}
+
+.headerOne,
+.timeVerifiedBox,
+.headerTwo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--content-padding);
+}
+
+.headerOne,
+.headerTwo {
+  width: 100%;
+}
+
+.headerTwo li p {
+  font-weight: lighter;
+  text-wrap: nowrap;
+  font-size: 0.75rem;
+}
+
+.headerTwo li p span {
+  font-weight: 500;
+}
+
+.images,
+.image {
+  display: grid;
+}
+
+.images {
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--content-padding);
+}
+
+.image > * {
+  grid-area: 1 / 1; /* put all in same cell */
+}
+
+.adImage {
+  width: 150px;
+  height: 130px;
+  border-radius: var(--radius-md);
+}
+
+.image span {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding: var(--content-padding);
+}
+
+.image span button {
+  background-color: var(--color-bg-secondary);
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-content: center;
+  border-radius: var(--radius-full);
+}
+
+.buttonRack {
+  margin-block: 1rem;
+}
+.buttonRack,
+.suspensionRack {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column;
+  gap: var(--content-padding);
+}
+
+.statusButton {
+  width: calc(100% - (2 * var(--content-padding)));
+  text-align: center;
+  padding: var(--content-padding);
+  border-radius: var(--radius-md);
+}
+
+.suspend {
+  background-color: var(--color-surface);
+  color: white;
+}
+
+.activate {
+  background-color: var(--color-theme-green);
+}
+
+.explainSuspension {
+  background-color: transparent;
+  width: 100%;
+  min-height: 120px;
+  resize: none;
+  padding: var(--content-padding);
+  border: 2px solid var(--color-muted);
+  border-radius: var(--radius-md);
 }
