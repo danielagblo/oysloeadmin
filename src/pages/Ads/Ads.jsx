@@ -471,7 +471,79 @@ export const Ads = () => {
               </div>
             )}
           </div>
-          <div className={styles.adDetails}></div>
+          <div className={styles.adDetails}>
+            <label>Product Category</label>
+            <input
+              type="text"
+              defaultValue={
+                selectedRow?.productCategory?.category +
+                "-->" +
+                selectedRow?.productCategory?.subcategory
+              }
+            />
+
+            <label>Title</label>
+            <input type="text" defaultValue={selectedRow?.title} />
+
+            <label>Ad Purpose</label>
+            <div className={styles.adPurposeBox}>
+              <div className={styles.adPurpose}>
+                <div>
+                  <input
+                    type="radio"
+                    defaultChecked={selectedRow?.adPurpose === "Sale"}
+                  />
+                </div>
+                <label>Sale</label>
+              </div>
+              <div className={styles.adPurpose}>
+                <div>
+                  <input
+                    type="radio"
+                    defaultChecked={selectedRow?.adPurpose === "Pay Later"}
+                  />
+                </div>
+                <label>Pay Later</label>
+              </div>
+              <div className={styles.adPurpose}>
+                <div>
+                  <input
+                    type="radio"
+                    defaultChecked={selectedRow?.adPurpose === "Sale"}
+                  />
+                </div>
+                <label>Rent</label>
+              </div>
+            </div>
+
+            <label>Price</label>
+            <input type="text" defaultValue={" ₵ " + selectedRow?.price} />
+            <input
+              type="text"
+              defaultValue={
+                selectedRow?.location?.city + ", " + selectedRow?.location?.area
+              }
+            />
+            <input type="text" defaultValue={selectedRow?.location?.street} />
+
+            <label>Key Features</label>
+            {selectedRow?.attributes?.map((attribute, idx) => (
+              <input
+                type="text"
+                defaultValue={attribute?.name + ": " + attribute?.value}
+                key={idx}
+              />
+            ))}
+            {selectedRow?.parameters?.map((parameter, idx) => (
+              <input
+                type="text"
+                defaultValue={parameter?.name + ": " + parameter?.value}
+                key={idx}
+              />
+            ))}
+            <label>Condition</label>
+            <input type="text" defaultValue={selectedRow?.condition} />
+          </div>
           <div className={styles.adDetails}></div>
         </div>
       )}

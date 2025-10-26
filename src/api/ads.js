@@ -323,7 +323,7 @@ export const adsData = [
     id: 5,
     title: "Canon EOS R10 Mirrorless Camera",
     productCategory: { category: "Electronics", subcategory: "Cameras" },
-    adPurpose: "Sale",
+    adPurpose: "Pay Later",
     price: 8200,
     currency: "GHS",
     location: {
