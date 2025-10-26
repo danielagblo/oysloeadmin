@@ -1,0 +1,108 @@
+.alertsContainer {
+  padding: var(--content-padding);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--content-padding);
+}
+
+.alertBox,
+.usersBox {
+  width: 100%;
+}
+
+.alertBox {
+  width: 45%;
+}
+
+.usersBox {
+  width: 55%;
+}
+
+.alertBox {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: calc(5 * var(--content-padding));
+  flex-direction: column;
+  border: 2px solid red;
+  padding-block: 2rem;
+}
+
+.alert {
+  width: 80%;
+}
+
+.messageBox {
+  background-color: var(--color-theme-green);
+  padding: var(--content-padding);
+  border-radius: var(--radius-ml);
+  border-top-right-radius: 0;
+  position: relative;
+  padding-right: 2rem;
+}
+
+.imgName {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--content-padding);
+}
+
+.imgName p {
+  margin-right: calc(5 * var(--content-padding));
+  margin-bottom: calc(0.5 * var(--content-padding));
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  position: absolute;
+  top: -30px;
+  right: -4%;
+}
+
+.timeUsers {
+  display: flex;
+  justify-content: flex-end;
+  gap: calc(2 * var(--content-padding));
+  font-size: 0.8rem;
+}
+
+.adPromo,
+.adMessage {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--content-padding);
+}
+
+.adPromo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--content-padding);
+}
+
+/* ensure each item takes half the width (two columns) while respecting the gap */
+.adPromo > .adMessage {
+  box-sizing: border-box;
+  flex: 0 0 calc(50% - (var(--content-padding) / 2));
+  display: flex; /* keep your row layout */
+  align-items: center;
+  gap: var(--content-padding);
+}
+
+.adMessage {
+  border: 1px solid var(--color-muted);
+  padding: var(--content-padding);
+  font-size: 0.8rem;
+  border-radius: var(--radius-ml);
+  margin-block: var(--content-padding);
+}
+
+.adMessage img {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-ml);
+}
