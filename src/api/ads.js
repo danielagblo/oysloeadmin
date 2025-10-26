@@ -67,7 +67,7 @@ export const adsData = [
           avatar: "https://randomuser.me/api/portraits/men/11.jpg",
         },
         stars: 5,
-        text: "Great vehicle, saw it in person — pristine condition.",
+        text: "Great vehicle, saw it in person — pristine condition.Great vehicle, saw it in person — pristine condition.Great vehicle, saw it in person — pristine condition.",
         date: "2025-04-05T08:10:00Z",
         relatedAds: [2, 7],
       },

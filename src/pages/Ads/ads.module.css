@@ -25,6 +25,10 @@
   gap: var(--content-padding);
 }
 
+.dropdown {
+  position: relative;
+}
+
 .dropdown,
 .backButton {
   padding: 5px 10px;
@@ -340,4 +344,214 @@
   text-align: left;
   text-wrap: nowrap;
   padding: 0;
+}
+
+.head {
+  gap: 1rem;
+  display: flex;
+  justify-content: space-around;
+  padding: calc(2 * var(--content-padding));
+  align-items: center;
+  flex-direction: column;
+}
+
+.head img {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius-full);
+  border: 5px solid var(--color-theme-green);
+  outline: 10px solid var(--color-bg-secondary);
+  outline-offset: -13px;
+}
+
+.adsBoxSeller {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  gap: var(--content-padding);
+  padding: var(--content-padding);
+}
+
+.adBoxSeller {
+  flex: 1 1 0;
+  background-color: var(--color-bg);
+  padding: var(--content-padding);
+  border-radius: var(--radius-md);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  min-width: 0;
+}
+.adBoxSeller p {
+  text-wrap: nowrap;
+  color: var(--color-muted);
+  font-size: 0.8rem;
+}
+
+.pendingBox {
+  background-color: var(--color-bg);
+  width: fit-content;
+  margin-left: auto;
+  padding: var(--content-padding);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  border-radius: var(--radius-md);
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+}
+
+.pendingBox h3 {
+  font-weight: 500;
+}
+.levelBox {
+  width: 100%;
+}
+
+.bar {
+  width: 100%;
+  height: var(--content-padding);
+  background-color: var(--color-theme-green);
+  border-radius: var(--radius-md);
+}
+
+.checkmark {
+  /* padding: 5px; */
+  background-color: var(--color-theme-green);
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  display: grid;
+  place-content: center;
+}
+
+.textMark {
+  display: flex;
+  justify-content: flex-start;
+  gap: var(--content-padding);
+  align-items: center;
+  margin-block: var(--content-padding);
+}
+
+.textMark p {
+  font-size: 0.7rem;
+}
+
+.reviewsBox,
+.reviewColumn {
+  width: 70%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column;
+}
+.reviewsBox {
+  flex-direction: row;
+  margin-left: -3.5rem;
+  gap: var(--content-padding);
+}
+.reviewColumn:last-child {
+  width: 100%;
+  gap: calc(0.5 * var(--content-padding));
+}
+
+.reviewColumn h1 {
+  font-size: 3rem;
+  margin-block: -5px;
+}
+
+.starRating {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: calc(0.5 * var(--content-padding));
+}
+
+.starRating > * {
+  width: fit-content;
+  font-size: 0.7rem;
+}
+
+.reviewBar {
+  min-width: 100%;
+  height: 10px;
+  background-color: var(--color-muted-2);
+  border-radius: var(--radius-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.reviewProgress {
+  position: absolute;
+  background-color: var(--color-muted-3);
+  height: 100%;
+  width: var(--progress-width);
+  border-radius: var(--radius-md);
+  top: 0;
+  left: 0;
+}
+
+.commentsBox {
+  width: 100%;
+}
+
+.comment {
+  max-width: 100%;
+  margin-block: var(--content-padding);
+}
+
+.commentHeader {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: var(--content-padding);
+}
+
+.commentHeader img {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-md);
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 90%;
+  /* right: -60%; */
+  background-color: var(--color-bg);
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: column;
+  gap: 1rem;
+  padding: var(--content-padding);
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  overflow-y: scroll;
+}
+
+.dropdownItem {
+  cursor: pointer;
+  width: 100%;
+  text-transform: capitalize;
+}
+
+.dropDownUserSearch {
+  background-color: var(--color-bg-secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--content-padding);
+  padding-inline: var(--content-padding);
+  border-radius: var(--radius-xl);
+}
+
+.dropDownUserSearch input {
+  border: none;
+  outline: none;
 }

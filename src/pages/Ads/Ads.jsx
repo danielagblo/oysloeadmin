@@ -1,39 +1,34 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import styles from "./ads.module.css";
 import { Caret } from "../../components/SVGIcons/Caret";
 import { SearchIcon } from "../../components/SVGIcons/SearchIcon";
-import { adsData } from "../../api/ads"; // <-- use this or fetch from API
+import { adsData } from "../../api/ads";
 import { X } from "lucide-react";
 import { CheckMark } from "../../components/SVGIcons/CheckMark";
-import formatNumber from "../../utils/numConverters";
+import formatNumber, { timeAgo } from "../../utils/numConverters";
 import TrashIcon from "../../assets/TrashIcon.png";
 import ImageIcon from "../../components/SVGIcons/ImageIcon";
+import { Support } from "../../components/SVGIcons/Support";
+import { NavLink } from "react-router-dom";
+import { ReviewStars } from "../../components/ReviewStars/ReviewStars";
+import { StarIcon } from "../../components/SVGIcons/StarIcon";
 
+/* ---------- helpers (unchanged) ---------- */
 function parseDateApplied(raw) {
   if (!raw) return null;
-
-  // if it's already an ISO-ish createdAt
   if (/\d{4}-\d{2}-\d{2}T/.test(raw)) {
     const d = new Date(raw);
     return isNaN(d.getTime()) ? null : d;
   }
-
-  // If already a Date object
   if (raw instanceof Date) return raw;
-
   const s = String(raw).trim().toLowerCase();
-
   const now = new Date();
-
-  // Today 12:00 or today 9:30 pm
   if (s.startsWith("today")) {
     const timePart = s.replace(/^today/, "").trim();
     if (!timePart) return new Date(now);
     const parsed = new Date(`${now.toDateString()} ${timePart}`);
     return isNaN(parsed.getTime()) ? new Date(now) : parsed;
   }
-
-  // Yesterday 4:35 PM
   if (s.startsWith("yesterday")) {
     const timePart = s.replace(/^yesterday/, "").trim();
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -41,27 +36,20 @@ function parseDateApplied(raw) {
     const parsed = new Date(`${yesterday.toDateString()} ${timePart}`);
     return isNaN(parsed.getTime()) ? yesterday : parsed;
   }
-
-  // "2 days ago" or "3 days ago"
   const daysMatch = s.match(/(\d+)\s+days?\s+ago/);
   if (daysMatch) {
     const n = parseInt(daysMatch[1], 10);
     return new Date(Date.now() - n * 24 * 60 * 60 * 1000);
   }
-
-  // "last week"
   if (s.includes("last week")) {
     return new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   }
-
-  // fallback: try Date parse
   const tryParse = new Date(raw);
   return isNaN(tryParse.getTime()) ? null : tryParse;
 }
 
-// helper: recursively collect primitive values into an array
 function collectValues(value, out = []) {
-  if (value == null) return out; // covers null/undefined
+  if (value == null) return out;
   const t = typeof value;
   if (t === "string" || t === "number" || t === "boolean") {
     out.push(String(value));
@@ -72,10 +60,7 @@ function collectValues(value, out = []) {
     return out;
   }
   if (t === "object") {
-    // for objects, pick useful fields but also traverse: avoid extremely large binary-like fields
-    // we'll skip raw image binary (we only want their filenames/urls, which are strings and already handled)
     for (const k of Object.keys(value)) {
-      // optional: skip very large nested blobs if you have them
       if (k === "rawBlob" || k === "binaryData") continue;
       collectValues(value[k], out);
     }
@@ -83,24 +68,19 @@ function collectValues(value, out = []) {
   return out;
 }
 
-// build a single searchable lowercase string for an ad
 function buildSearchableText(ad) {
   const vals = [];
-  // Prefer explicit fields first for predictability:
   if (ad.title) vals.push(ad.title);
   if (ad.productCategory?.category) vals.push(ad.productCategory.category);
   if (ad.productCategory?.subcategory)
     vals.push(ad.productCategory.subcategory);
   if (ad.adPurpose) vals.push(ad.adPurpose);
   if (ad.subscriptionPlan) vals.push(ad.subscriptionPlan);
-  // seller fields
   if (ad.seller?.name) vals.push(ad.seller.name);
   if (ad.seller?.businessName) vals.push(ad.seller.businessName);
-  // location fields
   if (ad.location?.city) vals.push(ad.location.city);
   if (ad.location?.area) vals.push(ad.location.area);
   if (ad.location?.street) vals.push(ad.location.street);
-  // include arrays & attributes & params & tags
   if (Array.isArray(ad.tags)) vals.push(ad.tags.join(" "));
   if (Array.isArray(ad.images)) vals.push(ad.images.join(" "));
   if (Array.isArray(ad.comments)) {
@@ -109,7 +89,6 @@ function buildSearchableText(ad) {
       if (c.user?.name) vals.push(c.user.name);
     }
   }
-  // attributes and parameters (key/value pairs)
   if (Array.isArray(ad.attributes)) {
     for (const a of ad.attributes) vals.push(`${a.name} ${a.value}`);
   }
@@ -117,13 +96,10 @@ function buildSearchableText(ad) {
     for (const p of ad.parameters)
       vals.push(`${p.name} ${p.value || p.options?.join(" ")}`);
   }
-  // fallback: collect any other primitive values recursively
   collectValues(ad, vals);
-
   return vals.filter(Boolean).join(" ").toLowerCase();
 }
 
-// simple debounce hook
 function useDebouncedValue(value, delay = 200) {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {
@@ -133,101 +109,122 @@ function useDebouncedValue(value, delay = 200) {
   return debounced;
 }
 
-export const Ads = () => {
-  const [selectedRow, setSelectedRow] = useState(adsData[0]);
-  // const [selectedRow, setSelectedRow] = useState(null);
+function formatKeyName(key) {
+  if (!key) return "";
+  return key
+    .replace(/([A-Z])/g, " $1")
+    .replace(/^./, (s) => s.toUpperCase())
+    .trim();
+}
 
-  // search + filters state
+/* ---------- component ---------- */
+export const Ads = () => {
+  // selected ad
+  const [selectedRow, setSelectedRow] = useState(null);
+
+  // global search (search across all ad fields)
   const [searchInput, setSearchInput] = useState("");
   const debouncedSearch = useDebouncedValue(
     searchInput.trim().toLowerCase(),
     250
   );
 
-  const [selectedStatus, setSelectedStatus] = useState("All"); // All | Active | Pending | Suspended
-  const [selectedPromo, setSelectedPromo] = useState("All"); // All | Basic | Premium | Business
-  const [selectedAdType, setSelectedAdType] = useState("All"); // All | subcategory names
-  const [selectedUser, setSelectedUser] = useState("All"); // All | seller name (or partial)
+  // user dropdown search (search users inside the Users dropdown)
+  const [searchUserInput, setSearchUserInput] = useState("");
+  const debouncedUserSearch = useDebouncedValue(
+    searchUserInput.trim().toLowerCase(),
+    200
+  );
 
-  // dropdown open states (you had setOpenPromo previously, but not defined; adding all)
+  // filters
+  const [selectedStatus, setSelectedStatus] = useState("All");
+  const [selectedPromo, setSelectedPromo] = useState("All");
+  const [selectedAdType, setSelectedAdType] = useState("All");
+  const [selectedUser, setSelectedUser] = useState("All");
+
+  // dropdown open states
   const [openStatus, setOpenStatus] = useState(false);
   const [openPromo, setOpenPromo] = useState(false);
   const [openAdType, setOpenAdType] = useState(false);
   const [openUsers, setOpenUsers] = useState(false);
 
-  // 1) derive unique options from data (status/promo/adTypes/users)
+  // options derived from adsData
   const statusOptions = useMemo(
     () => ["All", "Active", "Pending", "Suspended"],
     []
   );
   const promoOptions = useMemo(() => {
     const set = new Set(["Basic", "Premium", "Business"]);
-    adsData.forEach((a) => a.subscriptionPlan && set.add(a.subscriptionPlan));
+    (adsData || []).forEach(
+      (a) => a.subscriptionPlan && set.add(a.subscriptionPlan)
+    );
     return ["All", ...Array.from(set)];
-  }, [adsData]);
+  }, []);
 
   const adTypeOptions = useMemo(() => {
-    const set = new Set();
-    adsData.forEach((a) => {
-      if (a.productCategory?.subcategory)
-        set.add(a.productCategory.subcategory);
-    });
+    const set = new Set(["Sale", "Pay Later", "Rent"]);
+    (adsData || []).forEach((a) => a.adPurpose && set.add(a.adPurpose));
     return ["All", ...Array.from(set)];
-  }, [adsData]);
+  }, []);
 
   const userOptions = useMemo(() => {
     const set = new Set();
-    adsData.forEach((a) => a.seller?.name && set.add(a.seller.name));
-    return ["All", ...Array.from(set).slice(0, 50)]; // limit users shown if many
-  }, [adsData]);
+    (adsData || []).forEach((a) => a.seller?.name && set.add(a.seller.name));
+    return ["All", ...Array.from(set)];
+  }, []);
 
-  // 2) precompute searchable text once per ad (memoized)
+  // filter userOptions by the user-search input (so the dropdown list is searchable)
+  const filteredUserOptions = useMemo(() => {
+    if (!debouncedUserSearch) return userOptions;
+    return userOptions.filter(
+      (u) =>
+        u === "All" ||
+        String(u || "")
+          .toLowerCase()
+          .includes(debouncedUserSearch)
+    );
+  }, [userOptions, debouncedUserSearch]);
+
+  // precompute searchable text and thumbnail once
   const dataWithSearch = useMemo(() => {
-    return (adsData || []).map((ad) => {
-      return {
-        ...ad,
-        _searchText: buildSearchableText(ad),
-        // provide a thumbnail convenience field used for summary/card
-        _thumbnail:
-          Array.isArray(ad.images) && ad.images.length ? ad.images[0] : null,
-      };
-    });
-  }, [adsData]);
+    return (adsData || []).map((ad) => ({
+      ...ad,
+      _searchText: buildSearchableText(ad),
+      _thumbnail:
+        Array.isArray(ad.images) && ad.images.length ? ad.images[0] : null,
+    }));
+  }, []);
 
-  // 3) filter logic (combined search + dropdown filters)
+  // combined filters (global search + dropdowns)
   const filteredData = useMemo(() => {
     const q = debouncedSearch || "";
     return (dataWithSearch || []).filter((row) => {
-      // global search - checks the prebuilt string
       if (q && !row._searchText.includes(q)) return false;
 
-      // status filter
       if (
         selectedStatus !== "All" &&
-        String(row.status).toLowerCase() !== selectedStatus.toLowerCase()
+        String(row.status || "").toLowerCase() !== selectedStatus.toLowerCase()
       )
         return false;
 
-      // promo/subscription filter
       if (
         selectedPromo !== "All" &&
-        String(row.subscriptionPlan).toLowerCase() !==
+        String(row.subscriptionPlan || "").toLowerCase() !==
           selectedPromo.toLowerCase()
       )
         return false;
 
-      // ad type (match subcategory)
       if (selectedAdType !== "All") {
-        const sub = (row.productCategory?.subcategory || "").toLowerCase();
-        if (!sub.includes(selectedAdType.toLowerCase())) return false;
+        const adp = String(row.adPurpose || "").toLowerCase();
+        if (!adp.includes(selectedAdType.toLowerCase())) return false;
       }
 
-      // user filter (partial match allowed)
       if (selectedUser !== "All") {
-        const sellerName = (row.seller?.name || "").toLowerCase();
-        if (!sellerName.includes(selectedUser.toLowerCase())) return false;
+        const sellerName = String(row.seller?.name || "").toLowerCase();
+        if (!sellerName.includes(String(selectedUser).toLowerCase()))
+          return false;
       }
-      setSelectedRow(null);
+
       return true;
     });
   }, [
@@ -239,16 +236,16 @@ export const Ads = () => {
     selectedUser,
   ]);
 
-  function formatKeyName(key) {
-    if (!key) return "";
-    return key
-      .replace(/([A-Z])/g, " $1")
-      .replace(/^./, (s) => s.toUpperCase())
-      .trim();
-  }
-
-  // small helper render for dropdowns
-  const Dropdown = ({ label, open, setOpen, options, value, onSelect }) => (
+  // Dropdown component: allowSearch toggles user search input
+  const Dropdown = ({
+    label,
+    open,
+    setOpen,
+    options,
+    value,
+    onSelect,
+    allowSearch = false,
+  }) => (
     <div className={styles.dropdownWrapper}>
       <button
         className={styles.dropdown}
@@ -262,11 +259,24 @@ export const Ads = () => {
           <Caret />
         </div>
       </button>
+
       {open && (
         <div className={styles.dropdownMenu}>
+          {allowSearch && (
+            <div className={styles.dropDownUserSearch}>
+              <SearchIcon />
+              <input
+                type="search"
+                placeholder="Search users..."
+                value={searchUserInput}
+                onChange={(e) => setSearchUserInput(e.target.value)}
+              />
+            </div>
+          )}
+
           {options.map((opt) => (
             <div
-              key={opt}
+              key={String(opt)}
               className={styles.dropdownItem}
               onClick={() => {
                 onSelect(opt);
@@ -281,7 +291,8 @@ export const Ads = () => {
     </div>
   );
 
-  console.log(selectedRow);
+  // debug
+  // useEffect(() => { console.log("filteredData length", filteredData.length); }, [filteredData]);
 
   return (
     <div className={styles.adsContainer}>
@@ -315,9 +326,10 @@ export const Ads = () => {
             label="Users"
             open={openUsers}
             setOpen={setOpenUsers}
-            options={userOptions}
+            options={filteredUserOptions}
             value={selectedUser}
             onSelect={setSelectedUser}
+            allowSearch={true}
           />
         </div>
 
@@ -332,12 +344,9 @@ export const Ads = () => {
         </div>
       </div>
 
-      {/* {selectedRow ? ( */}
       {!selectedRow ? (
         <div className={styles.table}>
-          <div className={styles.count}>
-            ~{filteredData.length} {"ads"}
-          </div>
+          <div className={styles.count}>~{filteredData.length} ads</div>
 
           <ul className={styles.adsPreivewTable}>
             {filteredData.map((ad) => (
@@ -352,24 +361,25 @@ export const Ads = () => {
                     alt={ad.title}
                     className={styles.thumb}
                   />
-
                   <div className={styles.rowTop}>
                     <h3 style={{ fontWeight: "normal" }}>{ad.title}</h3>
                     <h2 className={styles.price} style={{ fontWeight: "500" }}>
-                      ₵{ad.price.toLocaleString()}
+                      {ad.price ? `₵${ad.price.toLocaleString()}` : "—"}
                     </h2>
                   </div>
                 </div>
+
                 <div className={styles.adSellerInfo}>
                   <img
                     src={ad?.seller?.avatar || "/placeholder.png"}
-                    alt={ad.title}
+                    alt={ad?.seller?.name || "seller"}
                     className={`${styles.thumb} ${styles.userAvater}`}
                   />
                   <div className={styles.adSellerUserData}>
                     {ad?.approvedBy && (
                       <>
-                        Approved By: <span>{ad.approvedBy}</span> {"    "}
+                        Approved By: <span>{ad.approvedBy}</span>
+                        {"\u00A0\u00A0"}
                       </>
                     )}
                     {ad?.seller?.businessName && (
@@ -387,16 +397,13 @@ export const Ads = () => {
         <div className={styles.adBox}>
           <div className={styles.adDetails}>
             <div className={styles.headerOne}>
-              <button
-                type="button"
-                onClick={() => setSelectedRow(null)}
-                className={styles.backButton}
-              >
+              <div className={styles.backButton}>
                 <button type="button" onClick={() => setSelectedRow(null)}>
                   <Caret />
                 </button>
                 <p>Return</p>
-              </button>
+              </div>
+
               <div className={styles.timeVerifiedBox}>
                 <div className={styles.time}>
                   ~
@@ -418,6 +425,7 @@ export const Ads = () => {
                 </div>
               </div>
             </div>
+
             <ul className={styles.headerTwo}>
               {Object.entries(selectedRow?.stats || {}).map(([key, value]) => (
                 <li key={key}>
@@ -431,10 +439,15 @@ export const Ads = () => {
                 </li>
               ))}
             </ul>
+
             <ul className={styles.images}>
               {selectedRow?.images?.map((image, idx) => (
                 <li className={styles.image} key={idx}>
-                  <img src={image} className={styles.adImage} />
+                  <img
+                    src={image}
+                    className={styles.adImage}
+                    alt={`ad-${idx}`}
+                  />
                   <span className={styles.delIcon}>
                     <button>
                       <ImageIcon src={TrashIcon} size={20} alt="Ads Icon" />
@@ -443,11 +456,13 @@ export const Ads = () => {
                 </li>
               ))}
             </ul>
+
             <div
               style={{
                 margin: selectedRow?.status === "Suspended" ? "2rem" : 0,
               }}
             />
+
             {selectedRow?.status !== "Suspended" && (
               <div className={styles.buttonRack}>
                 <div className={styles.suspensionRack}>
@@ -471,15 +486,12 @@ export const Ads = () => {
               </div>
             )}
           </div>
+
           <div className={styles.adDetails}>
             <label>Product Category</label>
             <input
               type="text"
-              defaultValue={
-                selectedRow?.productCategory?.category +
-                "  →  " +
-                selectedRow?.productCategory?.subcategory
-              }
+              defaultValue={`${selectedRow?.productCategory?.category} → ${selectedRow?.productCategory?.subcategory}`}
             />
 
             <label>Title</label>
@@ -509,7 +521,7 @@ export const Ads = () => {
                 <div>
                   <input
                     type="radio"
-                    defaultChecked={selectedRow?.adPurpose === "Sale"}
+                    defaultChecked={selectedRow?.adPurpose === "Rent"}
                   />
                 </div>
                 <label>Rent</label>
@@ -517,34 +529,143 @@ export const Ads = () => {
             </div>
 
             <label>Price</label>
-            <input type="text" defaultValue={" ₵ " + selectedRow?.price} />
             <input
               type="text"
-              defaultValue={
-                selectedRow?.location?.city + ", " + selectedRow?.location?.area
-              }
+              defaultValue={selectedRow?.price ? `₵ ${selectedRow.price}` : ""}
             />
-            <input type="text" defaultValue={selectedRow?.location?.street} />
+            <input
+              type="text"
+              defaultValue={`${selectedRow?.location?.city || ""}, ${
+                selectedRow?.location?.area || ""
+              }`}
+            />
+            <input
+              type="text"
+              defaultValue={selectedRow?.location?.street || ""}
+            />
 
             <label>Key Features</label>
             {selectedRow?.attributes?.map((attribute, idx) => (
               <input
                 type="text"
-                defaultValue={attribute?.name + ": " + attribute?.value}
+                defaultValue={`${attribute?.name}: ${attribute?.value}`}
                 key={idx}
               />
             ))}
+
             {selectedRow?.parameters?.map((parameter, idx) => (
               <input
                 type="text"
-                defaultValue={parameter?.name + ": " + parameter?.value}
+                defaultValue={`${parameter?.name}: ${parameter?.value}`}
                 key={idx}
               />
             ))}
+
             <label>Condition</label>
             <input type="text" defaultValue={selectedRow?.condition} />
           </div>
-          <div className={styles.adDetails}></div>
+
+          <div className={styles.adDetails}>
+            <div className={styles.head}>
+              <img
+                src={selectedRow?.seller?.avatar}
+                alt={selectedRow?.seller?.name}
+              />
+              <NavLink to="/support" className={styles.backButton}>
+                <p>Chat</p>
+                <Support size={20} />
+              </NavLink>
+              <h1>{selectedRow?.seller?.name}</h1>
+
+              <div className={styles.levelBox}>
+                <div className={styles.textMark}>
+                  <span className={styles.checkmark}>
+                    <CheckMark />
+                  </span>
+                  <p>High Level</p>
+                </div>
+                <div className={styles.bar} />
+              </div>
+
+              <div className={styles.adsBoxSeller}>
+                <div className={styles.adBoxSeller}>
+                  <h2>{formatNumber(selectedRow?.seller?.activeAdsCount)}</h2>
+                  <p>Active Ads</p>
+                </div>
+                <div className={styles.adBoxSeller}>
+                  <h2>{formatNumber(selectedRow?.seller?.soldAdsCount)}</h2>
+                  <p>Sold Ads</p>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.reviewsBox}>
+              <div className={styles.reviewColumn}>
+                <h1>{selectedRow?.aggregatedReviews?.averageRating}</h1>
+                <ReviewStars
+                  bgColor="transparent"
+                  offColor="#8D93A5"
+                  count={Math.floor(
+                    selectedRow?.aggregatedReviews?.averageRating || 0
+                  )}
+                />
+                <p>{selectedRow?.aggregatedReviews?.totalReviews} Reviews</p>
+              </div>
+
+              <ul className={styles.reviewColumn}>
+                {Object.entries(
+                  selectedRow?.aggregatedReviews?.ratingBreakdown || {}
+                ).map(([star, count]) => {
+                  const total = Object.values(
+                    selectedRow?.aggregatedReviews?.ratingBreakdown || {}
+                  ).reduce((a, b) => a + b, 0);
+                  return (
+                    <li key={star} className={styles.starRating}>
+                      <span>
+                        <StarIcon color="#374957" size={15} />
+                      </span>
+                      <p>{star}</p>
+                      <div className={styles.reviewBar}>
+                        <div
+                          className={styles.reviewProgress}
+                          style={{
+                            "--progress-width": total
+                              ? `${((count / total) * 100).toFixed(1)}%`
+                              : "0%",
+                          }}
+                        />
+                      </div>
+                      <p>{total ? ((count / total) * 100).toFixed(1) : 0}%</p>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+
+            <ul className={styles.commentsBox}>
+              {selectedRow?.comments?.map((comment, idx) => (
+                <li key={idx} className={styles.comment}>
+                  <div className={styles.commentHeader}>
+                    <img
+                      src={comment?.user?.avatar}
+                      alt={comment?.user?.name}
+                    />
+                    <div className={styles.commentHeaderDetails}>
+                      <small>{timeAgo(comment?.date)}</small>
+                      <p>{comment?.user?.name}</p>
+                      <ReviewStars
+                        bgColor="transparent"
+                        offColor="#8D93A5"
+                        paddingLeft={0}
+                        count={Math.floor(comment?.stars || 0)}
+                      />
+                    </div>
+                  </div>
+                  <div className={styles.commentMessage}>{comment?.text}</div>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
     </div>
