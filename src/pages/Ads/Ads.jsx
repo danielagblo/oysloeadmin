@@ -225,6 +225,7 @@ export const Ads = () => {
           return false;
       }
 
+      setSelectedRow(null);
       return true;
     });
   }, [
@@ -245,40 +246,81 @@ export const Ads = () => {
     value,
     onSelect,
     allowSearch = false,
-  }) => (
-    <div className={styles.dropdownWrapper}>
-      <button
-        className={styles.dropdown}
-        onClick={() => setOpen((s) => !s)}
-        type="button"
-      >
-        <p>
-          {label}: {value}
-        </p>
-        <div>
-          <Caret />
-        </div>
-      </button>
+  }) => {
+    const inputRef = React.useRef(null);
 
-      {open && (
-        <div className={styles.dropdownMenu}>
+    // focus the input when dropdown opens (use setTimeout to allow layout to settle)
+    React.useEffect(() => {
+      if (open && allowSearch) {
+        const id = setTimeout(() => {
+          inputRef.current?.focus();
+          // optionally place caret at end:
+          const val = inputRef.current?.value ?? "";
+          inputRef.current &&
+            inputRef.current.setSelectionRange(val.length, val.length);
+        }, 0);
+        return () => clearTimeout(id);
+      }
+    }, [open, allowSearch]);
+
+    // keep the dropdown mounted to avoid unmount/remount (which causes focus loss)
+    // but hide it visually when closed
+    return (
+      <div
+        className={styles.dropdownWrapper}
+        // stop clicks from bubbling to any parent document click handlers that might close the dropdown
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          className={styles.dropdown}
+          onClick={() => setOpen((s) => !s)}
+          type="button"
+        >
+          <p>
+            {label}: {value}
+          </p>
+          <button>
+            <Caret />
+          </button>
+        </button>
+
+        {/* keep mounted, toggle visibility to prevent node recreation */}
+        <div
+          className={styles.dropdownMenu}
+          style={{ display: open ? "block" : "none" }}
+          // prevent the native blur when clicking inside (helps input keep focus)
+          onMouseDown={(e) => e.stopPropagation()}
+        >
           {allowSearch && (
-            <div className={styles.dropDownUserSearch}>
+            <div
+              className={styles.dropDownUserSearch}
+              onMouseDown={(e) => e.stopPropagation()}
+            >
               <SearchIcon />
               <input
+                ref={inputRef}
+                autoComplete="off"
                 type="search"
                 placeholder="Search users..."
                 value={searchUserInput}
+                // keep raw value — do not trim/toLowerCase here (do that in debounced filter)
                 onChange={(e) => setSearchUserInput(e.target.value)}
+                onKeyDown={(e) => {
+                  // optional: close on Escape
+                  if (e.key === "Escape") setOpen(false);
+                }}
               />
             </div>
           )}
 
           {options.map((opt) => (
+            // use onMouseDown instead of onClick to select before input blur
             <div
               key={String(opt)}
               className={styles.dropdownItem}
-              onClick={() => {
+              onMouseDown={(e) => {
+                e.preventDefault(); // prevents the input from losing caret before we handle selection
                 onSelect(opt);
                 setOpen(false);
               }}
@@ -287,9 +329,9 @@ export const Ads = () => {
             </div>
           ))}
         </div>
-      )}
-    </div>
-  );
+      </div>
+    );
+  };
 
   // debug
   // useEffect(() => { console.log("filteredData length", filteredData.length); }, [filteredData]);
