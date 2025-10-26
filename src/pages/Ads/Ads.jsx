@@ -477,7 +477,7 @@ export const Ads = () => {
               type="text"
               defaultValue={
                 selectedRow?.productCategory?.category +
-                "-->" +
+                "  →  " +
                 selectedRow?.productCategory?.subcategory
               }
             />
