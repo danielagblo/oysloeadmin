@@ -9,28 +9,40 @@
 .alertBox,
 .usersBox {
   width: 100%;
-}
-
-.alertBox {
-  width: 45%;
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-ml);
 }
 
 .usersBox {
-  width: 55%;
+  width: 60%;
 }
 
 .alertBox {
+  width: 40%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: calc(5 * var(--content-padding));
   flex-direction: column;
-  border: 2px solid red;
-  padding-block: 2rem;
+  padding-block: var(--content-padding);
+  padding-bottom: 0;
+  overflow: hidden;
 }
 
 .alert {
   width: 80%;
+}
+
+.alertsHolder {
+  height: 60dvh;
+  overflow-y: scroll;
+  padding: var(--content-padding);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column;
+  gap: 2rem;
+  /* border: 2px solid red; */
 }
 
 .messageBox {
@@ -105,4 +117,74 @@
   width: 60px;
   height: 60px;
   border-radius: var(--radius-ml);
+}
+
+.dropdown {
+  padding: 5px 10px;
+  border-radius: var(--radius-xl);
+  background-color: var(--color-bg);
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--content-padding);
+}
+
+.dropdown p {
+  text-transform: capitalize;
+}
+
+.dropdown button {
+  /* padding: 5px; */
+  border-radius: var(--radius-full);
+  width: 30px;
+  height: 30px;
+  background-color: var(--color-bg-secondary);
+  display: grid;
+  place-content: center;
+}
+
+.optionsInputs {
+  width: 100%;
+  /* border: 2px solid red; */
+}
+
+.dropdowns {
+  display: flex;
+  justify-content: flex-start;
+  gap: var(--content-padding);
+  padding: 0 var(--content-padding);
+  margin-top: -2rem;
+  /* border: 2px solid red; */
+}
+
+.chatInputs {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--content-padding);
+  padding: var(--content-padding);
+  background-color: white;
+  padding-block: var(--content-padding);
+  margin-top: var(--content-padding);
+}
+
+.picInputSend {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  border-radius: var(--radius-ml);
+  border: 1px solid var(--color-muted);
+  height: 100%;
+  padding-left: var(--content-padding);
+}
+.picInputSend button {
+  padding: var(--content-padding);
+}
+
+.picInputSend input {
+  width: 100%;
+  border: none;
+  outline: none;
 }
