@@ -1,0 +1,130 @@
+.usersContainer {
+  padding: var(--content-padding);
+  padding-right: 0;
+  position: relative;
+}
+
+.header,
+.dropDownTray {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--color-bg-secondary);
+  padding: var(--content-padding);
+  border-radius: var(--radius-ml);
+}
+
+.dropDownTray {
+  width: fit-content;
+  gap: var(--content-padding);
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown,
+.backButton {
+  padding: 5px 10px;
+  border-radius: var(--radius-xl);
+  background-color: var(--color-bg);
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--content-padding);
+}
+
+.dropdown p {
+  text-transform: capitalize;
+}
+
+.dropdown button,
+.backButton button {
+  border-radius: var(--radius-full);
+  width: 30px;
+  height: 30px;
+  background-color: var(--color-bg-secondary);
+  display: grid;
+  place-content: center;
+}
+
+.backButton {
+  border-radius: var(--radius-md);
+}
+
+.backButton span {
+  rotate: 90deg;
+}
+.backButton p {
+  padding: 5px 10px;
+}
+
+.search {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* border: 2px solid red; */
+  border: 2px solid var(--color-bg);
+  padding: 0px var(--content-padding);
+  /* background-color: var(--color-bg); */
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.search input {
+  /* background-color: var(--color-bg); */
+  outline: none;
+  border: none;
+  /* border: 2px solid red; */
+  padding: calc(var(--content-padding) + 3px);
+}
+
+.dropdownMenu {
+  position: absolute;
+  background-color: var(--color-bg);
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: column;
+  padding: var(--content-padding);
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  overflow-y: scroll;
+  z-index: 200;
+}
+
+.dropdownItem {
+  cursor: pointer;
+  width: 100%;
+  text-transform: capitalize;
+  margin-block: var(--content-padding);
+}
+
+.createAdminButton,
+.dropDownSetterButton,
+.muteButton,
+.deleteButton {
+  padding: 5px 10px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-theme-red);
+  color: white;
+  width: 6rem;
+  text-wrap: nowrap;
+  text-align: center;
+}
+
+.dropDownSetterButton {
+  background-color: var(--color-theme-green);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--content-padding);
+  color: var(--color-text);
+}
+
+.muteButton {
+  background-color: var(--color-muted-3);
+}
