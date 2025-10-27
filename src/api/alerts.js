@@ -9,6 +9,8 @@ export const alertsData = {
       verified: true,
       level: "high",
       avatar: "https://randomuser.me/api/portraits/women/21.jpg",
+      businessName: "Serwaa Studio",
+      adsCount: 12,
     },
     {
       id: 2,
@@ -17,6 +19,8 @@ export const alertsData = {
       verified: true,
       level: "middle",
       avatar: "https://randomuser.me/api/portraits/men/45.jpg",
+      businessName: "Ofori Enterprises",
+      adsCount: 24,
     },
     {
       id: 3,
@@ -25,6 +29,8 @@ export const alertsData = {
       verified: false,
       level: "low",
       avatar: "https://randomuser.me/api/portraits/women/17.jpg",
+      businessName: "Linda Boutique",
+      adsCount: 2,
     },
     {
       id: 4,
@@ -33,6 +39,8 @@ export const alertsData = {
       verified: false,
       level: "middle",
       avatar: "https://randomuser.me/api/portraits/men/31.jpg",
+      businessName: "Mensah Tech",
+      adsCount: 8,
     },
     {
       id: 5,
@@ -41,6 +49,8 @@ export const alertsData = {
       verified: true,
       level: "high",
       avatar: "https://randomuser.me/api/portraits/women/42.jpg",
+      businessName: "Addo & Co",
+      adsCount: 40,
     },
     {
       id: 6,
@@ -49,6 +59,8 @@ export const alertsData = {
       verified: false,
       level: "low",
       avatar: "https://randomuser.me/api/portraits/men/38.jpg",
+      businessName: "Kojo's Repairs",
+      adsCount: 1,
     },
     {
       id: 7,
@@ -57,6 +69,8 @@ export const alertsData = {
       verified: true,
       level: "high",
       avatar: "https://randomuser.me/api/portraits/women/28.jpg",
+      businessName: "Owusu Media",
+      adsCount: 15,
     },
     {
       id: 8,
@@ -65,6 +79,8 @@ export const alertsData = {
       verified: false,
       level: "middle",
       avatar: "https://randomuser.me/api/portraits/men/27.jpg",
+      businessName: "Kusi Traders",
+      adsCount: 6,
     },
     {
       id: 9,
@@ -73,6 +89,8 @@ export const alertsData = {
       verified: false,
       level: "low",
       avatar: "https://randomuser.me/api/portraits/women/31.jpg",
+      businessName: "Hammond Home",
+      adsCount: 0,
     },
     {
       id: 10,
@@ -81,6 +99,8 @@ export const alertsData = {
       verified: true,
       level: "middle",
       avatar: "https://randomuser.me/api/portraits/men/19.jpg",
+      businessName: "Appiah Ventures",
+      adsCount: 9,
     },
   ],
 

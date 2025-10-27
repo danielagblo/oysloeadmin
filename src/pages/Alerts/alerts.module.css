@@ -11,10 +11,12 @@
   width: 100%;
   background-color: var(--color-bg-secondary);
   border-radius: var(--radius-ml);
+  padding: 5px;
 }
 
 .usersBox {
   width: 60%;
+  overflow: hidden;
 }
 
 .alertBox {
@@ -187,4 +189,182 @@
   width: 100%;
   border: none;
   outline: none;
+}
+
+.header,
+.dropDownTray {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+  padding: var(--content-padding);
+  border-radius: var(--radius-ml);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+}
+
+.dropDownTray {
+  width: fit-content;
+  gap: var(--content-padding);
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown,
+.backButton {
+  padding: 5px 10px;
+  border-radius: var(--radius-xl);
+  background-color: var(--color-bg);
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--content-padding);
+}
+
+.dropdown p {
+  text-transform: capitalize;
+}
+
+.dropdown button,
+.backButton button {
+  /* padding: 5px; */
+  border-radius: var(--radius-full);
+  width: 30px;
+  height: 30px;
+  background-color: var(--color-bg-secondary);
+  display: grid;
+  place-content: center;
+}
+
+.search {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* border: 2px solid red; */
+  border: 2px solid var(--color-bg);
+  padding: 0px var(--content-padding);
+  /* background-color: var(--color-bg); */
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.search input {
+  /* background-color: var(--color-bg); */
+  outline: none;
+  border: none;
+  background-color: white;
+  padding: calc(var(--content-padding) + 3px);
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 90%;
+  background-color: var(--color-bg);
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: column;
+  padding: var(--content-padding);
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  overflow-y: scroll;
+  z-index: 200;
+}
+
+.dropdownItem {
+  cursor: pointer;
+  width: 100%;
+  text-transform: capitalize;
+  margin-block: var(--content-padding);
+}
+
+.userRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--content-padding);
+  background-color: white;
+  gap: 1rem;
+}
+
+.userRow > * {
+  /* border: 2px solid red; */
+  width: 100%;
+  text-align: center;
+}
+
+.userAvatar {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-full);
+}
+
+.userName {
+  text-align: left;
+}
+
+.userName strong {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.userName p {
+  font-size: 0.8rem;
+}
+
+.userLevel {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: var(--content-padding);
+  flex-direction: row;
+}
+
+.userLevel span {
+  width: 20px;
+  height: 20px;
+  background-color: var(--color-theme-green);
+  display: grid;
+  place-content: center;
+  border-radius: var(--content-padding);
+}
+
+.userLevel p {
+  text-transform: capitalize;
+}
+
+.isVerified,
+.adsCount {
+  text-align: left;
+}
+
+.selectRow {
+  width: fit-content;
+  padding: var(--content-padding);
+  scale: 2;
+}
+
+.selectRow input {
+  accent-color: var(--color-theme-green);
+  cursor: pointer;
+}
+
+.usersCount {
+  width: 100%;
+  padding: var(--content-padding);
+  text-align: right;
+}
+
+.usersList {
+  height: 60dvh;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
