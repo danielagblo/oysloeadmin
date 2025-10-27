@@ -35,6 +35,39 @@ export const users = [
     locations: ["Accra, Ghana"],
     muted: false,
     deleted: false,
+
+    // added review data
+    aggregatedReviews: {
+      averageRating: 4.5,
+      totalReviews: 234,
+      ratingBreakdown: {
+        5: 170,
+        4: 40,
+        3: 15,
+        2: 5,
+        1: 4,
+      },
+    },
+    comments: [
+      {
+        date: "2025-07-01T12:34:00Z",
+        stars: 5,
+        text: "Excellent support — handled our campaign quickly.",
+        user: {
+          name: "Akua Addo",
+          avatar: "https://randomuser.me/api/portraits/women/42.jpg",
+        },
+      },
+      {
+        date: "2025-06-28T09:10:00Z",
+        stars: 4,
+        text: "Good communication — pricing could be clearer.",
+        user: {
+          name: "Kweku Appiah",
+          avatar: "https://randomuser.me/api/portraits/men/19.jpg",
+        },
+      },
+    ],
   },
 
   {
@@ -72,6 +105,29 @@ export const users = [
     locations: ["Accra"],
     muted: false,
     deleted: false,
+
+    aggregatedReviews: {
+      averageRating: 4.9,
+      totalReviews: 54,
+      ratingBreakdown: {
+        5: 46,
+        4: 6,
+        3: 1,
+        2: 0,
+        1: 1,
+      },
+    },
+    comments: [
+      {
+        date: "2025-05-10T08:00:00Z",
+        stars: 5,
+        text: "Fantastic features delivered rapidly.",
+        user: {
+          name: "Power Seller",
+          avatar: "https://randomuser.me/api/portraits/men/55.jpg",
+        },
+      },
+    ],
   },
 
   {
@@ -109,6 +165,29 @@ export const users = [
     locations: ["Kumasi"],
     muted: false,
     deleted: false,
+
+    aggregatedReviews: {
+      averageRating: 4.1,
+      totalReviews: 12,
+      ratingBreakdown: {
+        5: 6,
+        4: 3,
+        3: 2,
+        2: 0,
+        1: 1,
+      },
+    },
+    comments: [
+      {
+        date: "2025-04-25T10:00:00Z",
+        stars: 4,
+        text: "Quick response time for my ticket — thank you.",
+        user: {
+          name: "Sandra Biom",
+          avatar: "https://randomuser.me/api/portraits/women/17.jpg",
+        },
+      },
+    ],
   },
 
   {
@@ -146,6 +225,8 @@ export const users = [
     locations: ["Accra"],
     muted: false,
     deleted: false,
+
+    // no aggregatedReviews/comments — UI will show defaults
   },
 
   {
@@ -183,6 +264,29 @@ export const users = [
     locations: ["Takoradi"],
     muted: false,
     deleted: false,
+
+    aggregatedReviews: {
+      averageRating: 4.0,
+      totalReviews: 2,
+      ratingBreakdown: {
+        5: 1,
+        4: 1,
+        3: 0,
+        2: 0,
+        1: 0,
+      },
+    },
+    comments: [
+      {
+        date: "2025-01-05T11:00:00Z",
+        stars: 4,
+        text: "Item arrived as described. Thanks!",
+        user: {
+          name: "John Agblo",
+          avatar: "https://randomuser.me/api/portraits/men/17.jpg",
+        },
+      },
+    ],
   },
 
   {
@@ -220,6 +324,29 @@ export const users = [
     locations: ["Accra"],
     muted: false,
     deleted: false,
+
+    aggregatedReviews: {
+      averageRating: 4.7,
+      totalReviews: 180,
+      ratingBreakdown: {
+        5: 140,
+        4: 25,
+        3: 10,
+        2: 3,
+        1: 2,
+      },
+    },
+    comments: [
+      {
+        date: "2024-12-15T09:00:00Z",
+        stars: 5,
+        text: "Reliable partner for big campaigns.",
+        user: {
+          name: "Power Seller",
+          avatar: "https://randomuser.me/api/portraits/men/55.jpg",
+        },
+      },
+    ],
   },
 
   {
@@ -257,6 +384,29 @@ export const users = [
     locations: ["Tamale"],
     muted: false,
     deleted: false,
+
+    aggregatedReviews: {
+      averageRating: 4.3,
+      totalReviews: 21,
+      ratingBreakdown: {
+        5: 12,
+        4: 6,
+        3: 2,
+        2: 1,
+        1: 0,
+      },
+    },
+    comments: [
+      {
+        date: "2024-11-01T15:20:00Z",
+        stars: 5,
+        text: "Very professional and helpful.",
+        user: {
+          name: "Ama Serwaa",
+          avatar: "https://randomuser.me/api/portraits/women/21.jpg",
+        },
+      },
+    ],
   },
 
   {
@@ -294,6 +444,7 @@ export const users = [
     locations: ["Ho"],
     muted: false,
     deleted: false,
+    // no reviews yet
   },
 
   {
@@ -331,6 +482,29 @@ export const users = [
     locations: ["Accra"],
     muted: false,
     deleted: false,
+
+    aggregatedReviews: {
+      averageRating: 4.6,
+      totalReviews: 78,
+      ratingBreakdown: {
+        5: 50,
+        4: 18,
+        3: 6,
+        2: 2,
+        1: 2,
+      },
+    },
+    comments: [
+      {
+        date: "2025-03-12T13:00:00Z",
+        stars: 5,
+        text: "Loved the sponsored post — great engagement.",
+        user: {
+          name: "Daniel Kery",
+          avatar: "https://randomuser.me/api/portraits/men/12.jpg",
+        },
+      },
+    ],
   },
 
   {
@@ -368,9 +542,32 @@ export const users = [
     locations: ["Takoradi"],
     muted: false,
     deleted: false,
+
+    aggregatedReviews: {
+      averageRating: 4.4,
+      totalReviews: 33,
+      ratingBreakdown: {
+        5: 20,
+        4: 8,
+        3: 3,
+        2: 1,
+        1: 1,
+      },
+    },
+    comments: [
+      {
+        date: "2024-08-10T10:30:00Z",
+        stars: 4,
+        text: "Prompt replies and flexible with payments.",
+        user: {
+          name: "John Agblo",
+          avatar: "https://randomuser.me/api/portraits/men/17.jpg",
+        },
+      },
+    ],
   },
 
-  // 10 more users to increase dataset size and variety
+  // Additional users 11-20 carry on as before; for brevity, only include review/comment examples
   {
     id: 11,
     name: "Akua Addo",
@@ -405,6 +602,29 @@ export const users = [
     locations: ["Accra"],
     muted: false,
     deleted: false,
+
+    aggregatedReviews: {
+      averageRating: 4.8,
+      totalReviews: 400,
+      ratingBreakdown: {
+        5: 320,
+        4: 55,
+        3: 15,
+        2: 6,
+        1: 4,
+      },
+    },
+    comments: [
+      {
+        date: "2024-12-01T09:00:00Z",
+        stars: 5,
+        text: "Consistently fast shipping and great product quality.",
+        user: {
+          name: "Power Seller",
+          avatar: "https://randomuser.me/api/portraits/men/55.jpg",
+        },
+      },
+    ],
   },
 
   {
@@ -441,6 +661,29 @@ export const users = [
     locations: ["Koforidua"],
     muted: false,
     deleted: false,
+
+    aggregatedReviews: {
+      averageRating: 3.9,
+      totalReviews: 1,
+      ratingBreakdown: {
+        5: 0,
+        4: 0,
+        3: 1,
+        2: 0,
+        1: 0,
+      },
+    },
+    comments: [
+      {
+        date: "2025-06-10T08:30:00Z",
+        stars: 3,
+        text: "Service ok, parts took longer than expected.",
+        user: {
+          name: "Test Low Activity",
+          avatar: "https://randomuser.me/api/portraits/men/50.jpg",
+        },
+      },
+    ],
   },
 
   {
@@ -477,6 +720,29 @@ export const users = [
     locations: ["Accra"],
     muted: false,
     deleted: false,
+
+    aggregatedReviews: {
+      averageRating: 4.7,
+      totalReviews: 120,
+      ratingBreakdown: {
+        5: 85,
+        4: 25,
+        3: 6,
+        2: 3,
+        1: 1,
+      },
+    },
+    comments: [
+      {
+        date: "2024-10-10T14:20:00Z",
+        stars: 5,
+        text: "Great content and collaboration experience.",
+        user: {
+          name: "Ama Serwaa",
+          avatar: "https://randomuser.me/api/portraits/women/21.jpg",
+        },
+      },
+    ],
   },
 
   {
@@ -657,6 +923,29 @@ export const users = [
     locations: ["Accra", "Kumasi"],
     muted: false,
     deleted: false,
+
+    aggregatedReviews: {
+      averageRating: 4.9,
+      totalReviews: 3200,
+      ratingBreakdown: {
+        5: 2600,
+        4: 400,
+        3: 120,
+        2: 50,
+        1: 30,
+      },
+    },
+    comments: [
+      {
+        date: "2024-05-20T07:45:00Z",
+        stars: 5,
+        text: "Huge selection and fast handling for bulk orders.",
+        user: {
+          name: "Admin Sample",
+          avatar: "https://randomuser.me/api/portraits/men/61.jpg",
+        },
+      },
+    ],
   },
 
   {
@@ -729,5 +1018,28 @@ export const users = [
     locations: ["Accra"],
     muted: false,
     deleted: false,
+
+    aggregatedReviews: {
+      averageRating: 4.6,
+      totalReviews: 10,
+      ratingBreakdown: {
+        5: 7,
+        4: 2,
+        3: 1,
+        2: 0,
+        1: 0,
+      },
+    },
+    comments: [
+      {
+        date: "2023-12-01T09:00:00Z",
+        stars: 5,
+        text: "Helpful admin tools, intuitive dashboard.",
+        user: {
+          name: "Daniel Kery",
+          avatar: "https://randomuser.me/api/portraits/men/12.jpg",
+        },
+      },
+    ],
   },
 ];

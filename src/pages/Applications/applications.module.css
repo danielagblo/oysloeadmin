@@ -39,6 +39,13 @@
   background-color: var(--color-bg-secondary);
   border-radius: var(--radius-ml);
   padding: var(--content-padding);
+  gap: var(--content-padding);
+}
+
+.row > * {
+  /* width: 100%; */
+  /* border: 2px solid red; */
+  /* overflow: clip; */
 }
 
 .row img {

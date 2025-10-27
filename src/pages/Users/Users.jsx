@@ -4,9 +4,13 @@ import styles from "./users.module.css";
 // <- new import: your generated dummy data file
 import { users as usersPageData } from "../../api/users";
 import formatNumber from "../../utils/numConverters";
+import { timeAgo } from "../../utils/numConverters";
 import { Caret } from "../../components/SVGIcons/Caret";
 import { SearchIcon } from "../../components/SVGIcons/SearchIcon";
 import { CheckMark } from "../../components/SVGIcons/CheckMark";
+import { ReviewStars } from "../../components/ReviewStars/ReviewStars";
+// Imported StarIcon used in the rating breakdown UI
+import { StarIcon } from "../../components/SVGIcons/StarIcon";
 
 /**
  * Users screen — wired to usersPageData (no layout changes)
@@ -192,6 +196,18 @@ export const Users = () => {
     );
   };
 
+  // Helper used by Users dropdown to convert selected option -> user object (or null)
+  const handleUserOptionSelect = (opt) => {
+    if (opt === "all") {
+      setSelectedUser(null);
+      return;
+    }
+    // opt format: "Name (Business Name)" - extract name before " ("
+    const name = String(opt).split(" (")[0];
+    const found = users.find((u) => u.name === name);
+    setSelectedUser(found ?? null);
+  };
+
   return (
     <div className={styles.usersContainer}>
       <div className={styles.header}>
@@ -279,44 +295,226 @@ export const Users = () => {
       </div>
 
       <div className={styles.content}>
-        <p className={styles.usersCount}>~ {filteredUsers.length} users</p>
-
-        <div className={styles.usersList}>
-          {filteredUsers.length === 0 ? (
-            <div className={styles.empty}>No users found</div>
-          ) : (
-            filteredUsers.map((u) => (
-              <div key={u.id} className={styles.userRow}>
-                <img
-                  src={u.profileImage || u.avatar}
-                  alt={u.name}
-                  className={styles.userAvatar}
-                  onError={(e) => onImgError(e)}
-                />
-                <div className={styles.userName}>
-                  <strong>{u.name}</strong>
-                  <p className={styles.businessName}>{u.businessName ?? ""}</p>
+        {selectedUser ? (
+          <div className={styles.userInfo}>
+            <div className={styles.userColumn}>
+              <div className={styles.profileImages}>
+                <div className={styles.profileImage}>
+                  <img
+                    src={selectedUser?.profileImage}
+                    alt="profile"
+                    onError={(e) => onImgError(e)}
+                  />
+                  <p>Profile Image</p>
                 </div>
-
-                <div className={styles.userMeta}>
-                  <div className={styles.userTypeLevel}>
-                    <span className={styles.userType}>{u.type}</span>
-                    <span className={styles.userLevel}>{u.level} level</span>
-                  </div>
-
-                  <div className={styles.userStats}>
-                    <div className={styles.adsCount}>
-                      {formatNumber(u.activeAds ?? 0)} ads
-                    </div>
-                    <div className={styles.verified}>
-                      {u.verified ? "Verified" : "Not Verified"}
-                    </div>
-                  </div>
+                <div className={styles.profileImage}>
+                  <img
+                    src={selectedUser?.businessLogo}
+                    alt="business logo"
+                    onError={(e) => onImgError(e)}
+                  />
+                  <p>Buisness Logo</p>
                 </div>
               </div>
-            ))
-          )}
-        </div>
+
+              <p>General Details</p>
+              <div className={styles.generalDetails}>
+                <label>Name</label>
+                <input defaultValue={selectedUser?.name} />
+                <div className={styles.labelVerified}>
+                  <label>Email</label>
+                  <span>{selectedUser?.email ? "Verified" : "Unverified"}</span>
+                </div>
+                <input defaultValue={selectedUser?.email} />
+                <label>First Number</label>
+                <input defaultValue={selectedUser?.phonePrimary} />
+                <label>Second Number</label>
+                <input defaultValue={selectedUser?.phoneSecondary || "---"} />
+                <div className={styles.labelVerified}>
+                  <label>National ID</label>
+                  <span>
+                    {selectedUser?.nationalId ? "Verified" : "Not Verified"}
+                  </span>
+                </div>
+                <input defaultValue={selectedUser?.nationalId} />
+              </div>
+            </div>
+            <div className={styles.userColumn}>
+              <div className={styles.idImages}>
+                <div className={styles.idImage}>
+                  <p>ID FRONT</p>
+                  <img
+                    src={selectedUser?.idFront}
+                    alt="ID front"
+                    onError={(e) => onImgError(e)}
+                  />
+                </div>
+                <div className={styles.idBack}>
+                  <p>ID BACK</p>
+                  <img
+                    src={selectedUser?.idBack || selectedUser?.businessLogo}
+                    alt="ID back"
+                    onError={(e) => onImgError(e)}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.generalDetails}>
+                <label>Buisness Name</label>
+                <input defaultValue={selectedUser?.businessName} />
+                <p>Payment Account</p>
+                <label>Account Name</label>
+                <input defaultValue={selectedUser?.accountName} />
+                <label>Account Number</label>
+                <input defaultValue={selectedUser?.accountNumber || "---"} />
+                <label>Mobile Network</label>
+                <input defaultValue={selectedUser?.mobileNetwork} />
+              </div>
+            </div>
+            <div className={styles.userColumn}>
+              {/* SAFELY read aggregatedReviews from selectedUser, provide defaults */}
+              {(() => {
+                const agg = selectedUser?.aggregatedReviews ?? {
+                  averageRating: 0,
+                  totalReviews: 0,
+                  ratingBreakdown: {},
+                };
+                const totalReviews = agg.totalReviews || 0;
+                const breakdown = agg.ratingBreakdown || {};
+                return (
+                  <div className={styles.reviewsBox}>
+                    <div className={styles.reviewColumn}>
+                      <h1>{agg.averageRating?.toFixed?.(1) ?? 0}</h1>
+                      <ReviewStars
+                        bgColor="transparent"
+                        offColor="#8D93A5"
+                        count={Math.floor(agg.averageRating || 0)}
+                      />
+                      <p>{totalReviews} Reviews</p>
+                    </div>
+
+                    <ul className={styles.reviewColumn}>
+                      {Object.entries(breakdown).length === 0 ? (
+                        <li className={styles.starRatingEmpty}>
+                          No ratings yet
+                        </li>
+                      ) : (
+                        Object.entries(breakdown).map(([star, count]) => {
+                          const total = Object.values(breakdown).reduce(
+                            (a, b) => a + b,
+                            0
+                          );
+                          const pct = total
+                            ? ((count / total) * 100).toFixed(1)
+                            : 0;
+                          return (
+                            <li key={star} className={styles.starRating}>
+                              <span>
+                                <StarIcon color="#374957" size={15} />
+                              </span>
+                              <p>{star}</p>
+                              <div className={styles.reviewBar}>
+                                <div
+                                  className={styles.reviewProgress}
+                                  style={{
+                                    // use CSS var you had previously, fallback to width style
+                                    width: `${pct}%`,
+                                  }}
+                                />
+                              </div>
+                              <p>{pct}%</p>
+                            </li>
+                          );
+                        })
+                      )}
+                    </ul>
+                  </div>
+                );
+              })()}
+
+              <div className={styles.starFilters}>
+                <button>
+                  <StarIcon color="#374957" size={15} />
+                  <p>All</p>
+                </button>
+                {Array?.from({ length: 5 })?.map?.((_, idx) => (
+                  <button key={(idx += 1)}>
+                    <StarIcon color="#374957" size={15} />
+                    <p>{idx + 1}</p>
+                  </button>
+                ))}
+              </div>
+
+              {/* comments: safely iterate over selectedUser.comments (if present) */}
+              <ul className={styles.commentsBox}>
+                {(selectedUser?.comments || []).map((comment, idx) => (
+                  <li key={idx} className={styles.comment}>
+                    <div className={styles.commentHeader}>
+                      <img
+                        src={comment?.user?.avatar}
+                        alt={comment?.user?.name}
+                        onError={(e) => onImgError(e)}
+                      />
+                      <div className={styles.commentHeaderDetails}>
+                        <small>{timeAgo(comment?.date)}</small>
+                        <p>{comment?.user?.name}</p>
+                        <ReviewStars
+                          bgColor="transparent"
+                          offColor="#8D93A5"
+                          paddingLeft={0}
+                          count={Math.floor(comment?.stars || 0)}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.commentMessage}>{comment?.text}</div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        ) : (
+          <div className={styles.usersList}>
+            <div className={styles.userRow}>
+              <div className={styles.userAvatarTitle}>User Profile</div>
+              <div className={styles.userName}>User Name</div>
+              <div className={styles.userLevel}>Status</div>
+              <div className={styles.userVerified}>ID Status</div>
+              <div className={styles.userBuisnessName}>Buisness Name</div>
+              <div className={styles.userActiveAds}>Active Ads</div>
+              <div className={styles.userJoined}>Joined</div>
+            </div>
+            {filteredUsers.length === 0 ? (
+              <div className={styles.empty}>No users found</div>
+            ) : (
+              filteredUsers.map((u) => (
+                <div
+                  key={u.id}
+                  className={styles.userRow}
+                  onClick={() => setSelectedUser(u)}
+                >
+                  <img
+                    src={u.profileImage || u.avatar}
+                    alt={u.name}
+                    className={styles.userAvatar}
+                    onError={(e) => onImgError(e)}
+                  />
+                  <div className={styles.userName}>{u?.name}</div>
+                  <div className={styles.userLevel}>{u?.level} Level</div>
+                  <div className={styles.userVerified}>
+                    {u?.verified ? "Verified" : "Not Verified"}
+                  </div>
+                  <div className={styles.userBuisnessName}>
+                    {u?.businessName}
+                  </div>
+                  <div className={styles.userActiveAds}>
+                    {formatNumber(u?.activeAds)} ads
+                  </div>
+                  <div className={styles.userJoined}>{timeAgo(u?.joined)}</div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

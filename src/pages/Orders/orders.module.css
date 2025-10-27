@@ -187,6 +187,11 @@ input {
 
 .row {
   cursor: pointer;
+  gap: var(--content-padding);
+}
+
+.row > * {
+  width: 100%;
 }
 
 .row > img {

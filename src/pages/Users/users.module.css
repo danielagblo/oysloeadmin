@@ -128,3 +128,140 @@
 .muteButton {
   background-color: var(--color-muted-3);
 }
+
+.userRow,
+.usersList {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: var(--content-padding);
+}
+
+.userRow {
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--content-padding);
+  cursor: pointer;
+}
+
+.userRow:first-child {
+  background-color: transparent;
+}
+
+.usersList {
+  flex-direction: column;
+  /* border: 2px solid red; */
+}
+
+.userRow > * {
+  width: 100%;
+  /* border: 2px solid red; */
+}
+
+.userAvatar {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-full);
+}
+
+.userAvatarTitle {
+  width: 80px;
+  text-wrap: nowrap;
+}
+
+.userLevel {
+  text-transform: capitalize;
+}
+
+.userInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--content-padding);
+  margin-top: var(--content-padding);
+}
+
+.userColumn {
+  width: 100%;
+  background-color: var(--color-bg-secondary);
+  padding: var(--content-padding);
+  border-radius: var(--radius-md);
+}
+
+.reviewsBox,
+.reviewColumn {
+  width: 70%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column;
+}
+.reviewsBox {
+  flex-direction: row;
+  gap: var(--content-padding);
+}
+.reviewColumn:last-child {
+  width: 100%;
+  gap: calc(0.5 * var(--content-padding));
+}
+
+.reviewColumn h1 {
+  font-size: 3rem;
+  margin-block: -5px;
+}
+
+.starRating {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: calc(0.5 * var(--content-padding));
+}
+
+.starRating > * {
+  width: fit-content;
+  font-size: 0.7rem;
+}
+
+.reviewBar {
+  min-width: 100%;
+  height: 10px;
+  background-color: var(--color-muted-2);
+  border-radius: var(--radius-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.reviewProgress {
+  position: absolute;
+  background-color: var(--color-muted-3);
+  height: 100%;
+  width: var(--progress-width);
+  border-radius: var(--radius-md);
+  top: 0;
+  left: 0;
+}
+
+.commentsBox {
+  width: 100%;
+}
+
+.comment {
+  max-width: 100%;
+  margin-block: var(--content-padding);
+}
+
+.commentHeader {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: var(--content-padding);
+}
+
+.commentHeader img {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-md);
+}
