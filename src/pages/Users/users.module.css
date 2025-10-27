@@ -191,7 +191,7 @@
 
 .reviewsBox,
 .reviewColumn {
-  width: 70%;
+  width: 80%;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -225,7 +225,7 @@
 }
 
 .reviewBar {
-  min-width: 100%;
+  min-width: 90%;
   height: 10px;
   background-color: var(--color-muted-2);
   border-radius: var(--radius-md);
@@ -264,4 +264,97 @@
   width: 60px;
   height: 60px;
   border-radius: var(--radius-md);
+}
+
+.starFilters {
+  margin-block: 2rem;
+}
+
+.starFilters,
+.starFilterButton {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--content-padding);
+}
+
+.starFilterButton {
+  padding: var(--content-padding);
+  border-radius: var(--radius-xl);
+  scale: 0.8;
+}
+
+.profileImages,
+.profileImage,
+.idImages,
+.idImage {
+  /* border: 2px solid red; */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--content-padding);
+}
+
+.profileImages {
+  justify-content: space-around;
+}
+.profileImages,
+.idImages {
+  margin-block: 2rem;
+}
+
+.profileImage,
+.idImage {
+  flex-direction: column;
+  text-wrap: nowrap;
+}
+
+.profileImage img {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-muted-1);
+}
+
+.idImage img {
+  width: 200px;
+  height: 150px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-muted-1);
+}
+
+.generalDetails {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: var(--content-padding);
+  flex-direction: column;
+  padding-inline-start: var(--content-padding);
+}
+
+.generalDetails input {
+  width: 100%;
+  background-color: white;
+  border-color: var(--color-muted-1);
+}
+
+.labelVerified {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--content-padding);
+}
+
+.labelVerified span {
+  font-size: 0.5rem;
+  padding: 2px 5px;
+  background-color: #00acff;
+  color: white;
+  border-radius: var(--radius-ml);
+}
+
+label,
+.profileImage p,
+.idImage p {
+  opacity: 0.8;
 }

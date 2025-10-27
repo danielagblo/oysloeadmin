@@ -40,6 +40,7 @@ export const Users = () => {
   const [selectedAdType, setSelectedAdType] = React.useState("all");
   const [selectedUser, setSelectedUser] = React.useState(null);
   const [createAdmin, setCreateAdmin] = React.useState(false);
+  const [selectedFilter, setSelectedFilter] = React?.useState(-1);
 
   // header search (debounced)
   const [searchInput, setSearchInput] = React.useState("");
@@ -349,7 +350,7 @@ export const Users = () => {
                     onError={(e) => onImgError(e)}
                   />
                 </div>
-                <div className={styles.idBack}>
+                <div className={styles.idImage}>
                   <p>ID BACK</p>
                   <img
                     src={selectedUser?.idBack || selectedUser?.businessLogo}
@@ -390,7 +391,7 @@ export const Users = () => {
                         offColor="#8D93A5"
                         count={Math.floor(agg.averageRating || 0)}
                       />
-                      <p>{totalReviews} Reviews</p>
+                      <p>{formatNumber(totalReviews)} Reviews</p>
                     </div>
 
                     <ul className={styles.reviewColumn}>
@@ -433,12 +434,31 @@ export const Users = () => {
               })()}
 
               <div className={styles.starFilters}>
-                <button>
+                <button
+                  className={styles.starFilterButton}
+                  style={{
+                    border:
+                      selectedFilter === -1
+                        ? "2px solid var(--color-muted-2)"
+                        : "none",
+                  }}
+                  onClick={() => setSelectedFilter(-1)}
+                >
                   <StarIcon color="#374957" size={15} />
                   <p>All</p>
                 </button>
                 {Array?.from({ length: 5 })?.map?.((_, idx) => (
-                  <button key={(idx += 1)}>
+                  <button
+                    className={styles.starFilterButton}
+                    key={idx}
+                    style={{
+                      border:
+                        selectedFilter === idx
+                          ? "2px solid var(--color-muted-2)"
+                          : "none",
+                    }}
+                    onClick={() => setSelectedFilter(idx)}
+                  >
                     <StarIcon color="#374957" size={15} />
                     <p>{idx + 1}</p>
                   </button>
