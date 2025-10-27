@@ -25,7 +25,11 @@ function App() {
       ) : (
         <>
           <Header setOpenSideBar={setOpenSideBar} />
-          <SideBar openSideBar={openSideBar} setOpenSideBar={setOpenSideBar} />
+          <SideBar
+            openSideBar={openSideBar}
+            setOpenSideBar={setOpenSideBar}
+            setLoggedin={setLoggedin}
+          />
 
           <ContentArea>
             <Routes>

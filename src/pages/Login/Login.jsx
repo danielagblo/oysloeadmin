@@ -3,6 +3,7 @@ import styles from "./login.module.css";
 import Email from "../../assets/email.png";
 import Password from "../../assets/password.png";
 import ImageIcon from "../../components/SVGIcons/ImageIcon";
+import { handleLogin } from "../../api/auth";
 
 export const Login = ({ setLoggedin }) => {
   const isLoggedIn = sessionStorage?.getItem("isLoggedIn");
@@ -10,10 +11,6 @@ export const Login = ({ setLoggedin }) => {
   if (JSON.parse(isLoggedIn)) {
     setLoggedin(isLoggedIn);
   }
-  const handleLogin = () => {
-    sessionStorage?.setItem("isLoggedIn", JSON.stringify(true));
-    setLoggedin(true);
-  };
 
   return (
     <div className={styles.loginContainer}>
@@ -27,7 +24,7 @@ export const Login = ({ setLoggedin }) => {
           <ImageIcon src={Password} size={25} alt="Email" />
           <input type="password" placeholder="Password" required />
         </div>
-        <button onClick={handleLogin}>Login</button>
+        <button onClick={() => handleLogin(setLoggedin)}>Login</button>
       </form>
     </div>
   );

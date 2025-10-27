@@ -14,8 +14,9 @@ import ImageIcon from "../SVGIcons/ImageIcon";
 import { NavLink } from "react-router-dom";
 import { X } from "lucide-react";
 import { Location } from "../SVGIcons/Location";
+import { handleLogout } from "../../api/auth";
 
-export const SideBar = ({ openSideBar, setOpenSideBar }) => {
+export const SideBar = ({ openSideBar, setOpenSideBar, setLoggedin }) => {
   const links = [
     {
       page: "Dashboard",
@@ -63,6 +64,7 @@ export const SideBar = ({ openSideBar, setOpenSideBar }) => {
       icon: () => <Location size={25} />,
     },
   ];
+
   return (
     <div
       className={`${styles.sidebarContainer} ${
@@ -97,7 +99,10 @@ export const SideBar = ({ openSideBar, setOpenSideBar }) => {
           <Settings size={25} />
           <p>Settings</p>
         </NavLink>
-        <button className={styles.link}>
+        <button
+          className={styles.link}
+          onClick={() => handleLogout(setLoggedin)}
+        >
           <Logout size={25} />
           <p>Logout</p>
         </button>
