@@ -368,3 +368,112 @@
   overflow-y: scroll;
   overflow-x: hidden;
 }
+
+.creatorModal {
+  position: absolute;
+  z-index: 100;
+  background-color: var(--color-bg-secondary);
+  box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-ml);
+  padding: var(--content-padding);
+  bottom: 110%;
+}
+
+.ads,
+.ad {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--content-padding);
+  flex-direction: column;
+}
+
+.ads {
+  height: 40dvh;
+  justify-content: flex-start;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding: var(--content-padding);
+  margin-block: var(--content-padding);
+}
+
+.ad {
+  flex-direction: row;
+}
+
+.adImg {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-md);
+}
+
+.adDetails h3 {
+  font-size: 1.1rem;
+}
+
+.adDetailsp {
+  font-size: 0.9rem;
+}
+
+.adSelection input {
+  scale: 2;
+}
+
+.creatorModal button {
+  width: calc(100% - (2 * var(--content-padding)));
+  background-color: var(--color-theme-green);
+  border-radius: var(--radius-md);
+  padding: 5px var(--content-padding);
+}
+
+.couponAmountOptions {
+  display: grid;
+  gap: var(--content-padding);
+  margin-block: var(--content-padding);
+  grid-template-columns: repeat(2, 1fr);
+  box-sizing: border-box;
+}
+/* each option fills the grid cell */
+
+.couponOption {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  background: var(--bg-surface, #fff);
+  /* width: 100%;  */
+}
+
+.couponCode {
+  width: 100%;
+}
+
+/* make the input take available space */
+.couponOption input {
+  flex: 1 1 auto;
+  cursor: pointer;
+  width: 100%;
+  border: none;
+  background-color: transparent;
+  width: 5rem;
+}
+
+/* keep the check mark badge fixed-size */
+.couponOption span {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-content: center;
+  background-color: var(--color-theme-green);
+  border-radius: var(--radius-full);
+  flex: 0 0 20px;
+}
+
+.empty {
+  width: 100%;
+  text-align: center;
+  font-size: 2rem;
+}

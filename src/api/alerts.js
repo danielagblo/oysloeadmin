@@ -1,6 +1,7 @@
 // alertsData.js
 
 export const alertsData = {
+  couponOption: [32, 50, 100],
   users: [
     {
       id: 1,
