@@ -358,3 +358,101 @@ label,
 .idImage p {
   opacity: 0.8;
 }
+
+.createAdminContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--content-padding);
+  margin-block: var(--content-padding);
+}
+
+.adminCreatorPanel {
+  width: 30%;
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--content-padding);
+}
+
+.adminUsersList {
+  width: 70% !important;
+  height: 60dvh;
+  overflow-y: scroll;
+}
+
+.adminUsersList .userRow:first-child {
+  background-color: var(--color-bg-secondary);
+}
+
+.adminUsersList .userRow > * {
+  /* border: 2px solid red; */
+}
+
+.userRole,
+.adminDelete {
+  text-align: right;
+  text-transform: capitalize;
+}
+
+.adminDelete {
+  width: fit-content;
+  padding: var(--content-padding);
+}
+
+.profilePic,
+.adminCreationInputs,
+.checkBoxesTray,
+.checkBox {
+  display: flex;
+  justify-self: center;
+  align-items: center;
+  flex-direction: column;
+  gap: var(--content-padding);
+  margin-block: 2rem;
+}
+
+.profilePic button {
+  display: block;
+  border: 5px solid var(--color-theme-green);
+  width: fit-content;
+  height: fit-content;
+  border-radius: var(--radius-full);
+  padding: 0.5rem;
+  padding-top: 0.7rem;
+  padding-bottom: 0.4rem;
+}
+
+.adminCreationInputs {
+  width: 100%;
+}
+
+.adminCreationInputs input {
+  width: calc(100% - (4 * var(--content-padding)));
+  gap: var(--content-padding);
+  background-color: var(--color-bg);
+  border: none;
+}
+
+.checkBoxesTray,
+.checkBox {
+  flex-direction: row;
+  justify-content: space-around;
+  width: 100%;
+}
+
+.checkBoxesTray {
+  margin-block: var(--content-padding);
+  width: calc(100% - (4 * var(--content-padding)));
+}
+
+.checkBox {
+  width: fit-content;
+}
+
+.addButton {
+  width: calc(100% - (4 * var(--content-padding)));
+  padding: var(--content-padding);
+  text-align: center;
+  background-color: var(--color-theme-green);
+  border-radius: var(--radius-md);
+}

@@ -11,6 +11,9 @@ import { CheckMark } from "../../components/SVGIcons/CheckMark";
 import { ReviewStars } from "../../components/ReviewStars/ReviewStars";
 // Imported StarIcon used in the rating breakdown UI
 import { StarIcon } from "../../components/SVGIcons/StarIcon";
+import ImageIcon from "../../components/SVGIcons/ImageIcon";
+import TrashIcon from "../../assets/TrashIcon.png";
+import { NullImageIcon } from "../../components/SVGIcons/NullImageIcon";
 
 /**
  * Users screen — wired to usersPageData (no layout changes)
@@ -289,7 +292,7 @@ export const Users = () => {
             onChange={(e) => {
               setSearchInput(e.target.value);
               setSelectedUser(null);
-              setCreateAdmin(false);
+              // setCreateAdmin(false);
             }}
           />
         </div>
@@ -490,6 +493,60 @@ export const Users = () => {
                   </li>
                 ))}
               </ul>
+            </div>
+          </div>
+        ) : createAdmin ? (
+          <div className={styles.createAdminContainer}>
+            <div className={styles.adminCreatorPanel}>
+              <div className={styles.profilePic}>
+                <button>
+                  <NullImageIcon size={100} />
+                </button>
+                <p>Profile Image</p>
+              </div>
+              <div className={styles.adminCreationInputs}>
+                <input type="text" placeholder="Full Name" />
+                <input type="text" placeholder="Username" />
+                <input type="text" placeholder="Pass Kry" />
+                <div className={styles.checkBoxesTray}>
+                  <div className={styles.checkBox}>
+                    <input type="checkbox" defaultChecked={true} />
+                    <p>Staff</p>
+                  </div>
+                  <div className={styles.checkBox}>
+                    <input type="checkbox" />
+                    <p>Admin</p>
+                  </div>
+                </div>
+                <button className={styles.addButton}>Add</button>
+              </div>
+            </div>
+            <div className={`${styles.usersList} ${styles.adminUsersList}`}>
+              {filteredUsers.length === 0 ? (
+                <div className={styles.empty}>No users found</div>
+              ) : (
+                filteredUsers
+                  ?.filter((user) => user?.role !== "user")
+                  .map((u) => (
+                    <div
+                      key={u.id}
+                      className={styles.userRow}
+                      onClick={() => setSelectedUser(u)}
+                    >
+                      <img
+                        src={u.profileImage || u.avatar}
+                        alt={u.name}
+                        className={styles.userAvatar}
+                        onError={(e) => onImgError(e)}
+                      />
+                      <div className={styles.userName}>{u?.name}</div>
+                      <div className={styles.userRole}>~ {u?.role}</div>
+                      <button className={styles.adminDelete}>
+                        <ImageIcon src={TrashIcon} />
+                      </button>
+                    </div>
+                  ))
+              )}
             </div>
           </div>
         ) : (
