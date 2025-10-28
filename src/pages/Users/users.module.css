@@ -390,10 +390,6 @@ label,
   background-color: var(--color-bg-secondary);
 }
 
-.adminUsersList .userRow > * {
-  /* border: 2px solid red; */
-}
-
 .userRole,
 .adminDelete {
   text-align: right;
