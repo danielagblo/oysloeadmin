@@ -237,6 +237,14 @@ export const Ads = () => {
     selectedUser,
   ]);
 
+  const [images, setImages] = useState(selectedRow?.images);
+
+  const deleteImages = (id) => {
+    setImages((prev) => {
+      return prev?.filter((img, idx) => idx !== id);
+    });
+  };
+
   // Dropdown component: allowSearch toggles user search input
   const Dropdown = ({
     label,
@@ -395,7 +403,10 @@ export const Ads = () => {
               <li
                 key={ad.id}
                 className={styles.adRow}
-                onClick={() => setSelectedRow(ad)}
+                onClick={() => {
+                  setSelectedRow(ad);
+                  setImages(ad?.images);
+                }}
               >
                 <div className={styles.adInfo}>
                   <img
@@ -483,7 +494,7 @@ export const Ads = () => {
             </ul>
 
             <ul className={styles.images}>
-              {selectedRow?.images?.map((image, idx) => (
+              {images?.map((image, idx) => (
                 <li className={styles.image} key={idx}>
                   <img
                     src={image}
@@ -491,7 +502,7 @@ export const Ads = () => {
                     alt={`ad-${idx}`}
                   />
                   <span className={styles.delIcon}>
-                    <button>
+                    <button onClick={() => deleteImages(idx)}>
                       <ImageIcon src={TrashIcon} size={20} alt="Ads Icon" />
                     </button>
                   </span>
