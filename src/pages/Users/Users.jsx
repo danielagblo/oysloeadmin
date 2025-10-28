@@ -14,9 +14,10 @@ import { StarIcon } from "../../components/SVGIcons/StarIcon";
 import ImageIcon from "../../components/SVGIcons/ImageIcon";
 import TrashIcon from "../../assets/TrashIcon.png";
 import { NullImageIcon } from "../../components/SVGIcons/NullImageIcon";
+import { Plus } from "lucide-react";
 
 /**
- * Users screen — wired to usersPageData (no layout changes)
+ * Users screen — wired to usersPageData (keeps layout)
  */
 export const Users = () => {
   // --- dropdown options ---
@@ -31,11 +32,15 @@ export const Users = () => {
     "Real Estate",
   ];
 
-  // --- dropdown open state ---
+  // --- dropdown open state (header) ---
   const [openStatus, setOpenStatus] = React.useState(false);
   const [openPromo, setOpenPromo] = React.useState(false);
   const [openAdType, setOpenAdType] = React.useState(false);
   const [openUsers, setOpenUsers] = React.useState(false);
+
+  // --- dropdown open state (selectedUser controls) ---
+  const [openIdStatus, setOpenIdStatus] = React.useState(false);
+  const [openUserLevel, setOpenUserLevel] = React.useState(false);
 
   // --- selected values ---
   const [selectedStatus, setSelectedStatus] = React.useState("all");
@@ -43,7 +48,7 @@ export const Users = () => {
   const [selectedAdType, setSelectedAdType] = React.useState("all");
   const [selectedUser, setSelectedUser] = React.useState(null);
   const [createAdmin, setCreateAdmin] = React.useState(false);
-  const [selectedFilter, setSelectedFilter] = React?.useState(-1);
+  const [selectedFilter, setSelectedFilter] = React.useState(-1); // -1 => All
 
   // header search (debounced)
   const [searchInput, setSearchInput] = React.useState("");
@@ -53,10 +58,11 @@ export const Users = () => {
     return () => clearTimeout(id);
   }, [searchInput]);
 
-  // use the generated users data
-  const users = Array.isArray(usersPageData)
-    ? usersPageData
-    : usersPageData?.users ?? [];
+  // use the generated users data but make it stateful so we can add/remove/update
+  const [usersState, setUsersState] = React.useState(
+    Array.isArray(usersPageData) ? usersPageData : usersPageData?.users ?? []
+  );
+
   // --- user filtering logic (same rules used previously) ---
   function filterUsers(
     list = [],
@@ -98,12 +104,12 @@ export const Users = () => {
   // filtered users (based on header filters + search)
   const filteredUsers = React.useMemo(
     () =>
-      filterUsers(users, {
+      filterUsers(usersState, {
         status: selectedStatus,
         promo: selectedPromo,
         search: debouncedSearch,
       }),
-    [users, selectedStatus, selectedPromo, debouncedSearch]
+    [usersState, selectedStatus, selectedPromo, debouncedSearch]
   );
 
   // --- Users dropdown: searchable options (shows user names) ---
@@ -112,10 +118,10 @@ export const Users = () => {
     const q = String(userDropdownQuery || "")
       .trim()
       .toLowerCase();
-    const opts = users.map((u) => `${u.name} (${u.businessName ?? "—"})`);
+    const opts = usersState.map((u) => `${u.name} (${u.businessName ?? "—"})`);
     if (!q) return ["all", ...opts];
     return ["all", ...opts.filter((o) => o.toLowerCase().includes(q))];
-  }, [users, userDropdownQuery]);
+  }, [usersState, userDropdownQuery]);
 
   // image fallback
   const onImgError = (e, fallback = "/images/fallback-user.png") => {
@@ -126,6 +132,7 @@ export const Users = () => {
   // --- Dropdown component (kept as you provided) ---
   const Dropdown = ({
     label,
+    useDefault = false,
     open,
     setOpen,
     options = [],
@@ -144,20 +151,24 @@ export const Users = () => {
       }
     }, [open, allowSearch]);
 
+    console.log("Value: ", value);
+
     return (
       <div
         className={styles.dropdownWrapper}
+        style={styles}
         onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
       >
         <button
-          className={styles.dropdown}
+          className={useDefault ? styles.dropdown : styles.dropDownSetterButton}
           type="button"
           onClick={() => setOpen((s) => !s)}
         >
-          <p>
-            {label}: {value}
+          <p style={{ textTransform: "capitalize" }}>
+            {useDefault ? `${label}: ${value}` : value || label}
           </p>
+
           <button type="button" aria-hidden>
             <Caret />
           </button>
@@ -208,9 +219,146 @@ export const Users = () => {
     }
     // opt format: "Name (Business Name)" - extract name before " ("
     const name = String(opt).split(" (")[0];
-    const found = users.find((u) => u.name === name);
+    const found = usersState.find((u) => u.name === name);
     setSelectedUser(found ?? null);
   };
+
+  // -------------------
+  // admin create helpers (kept as previous version)
+  // -------------------
+  const fileInputRef = React.useRef(null);
+  const [createAdminForm, setCreateAdminForm] = React.useState({
+    name: "",
+    username: "",
+    passkey: "",
+    roleIsStaff: true,
+    profileDataUrl: "",
+  });
+
+  const handleProfileFileChange = (file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setCreateAdminForm((p) => ({ ...p, profileDataUrl: e.target.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+  const onCreateAdminFile = (e) => {
+    const f = e.target.files?.[0];
+    if (f) handleProfileFileChange(f);
+  };
+
+  const handleAddAdmin = ({
+    name,
+    username,
+    passkey = "",
+    role = "staff",
+    profileDataUrl = "",
+  }) => {
+    const nextId =
+      (usersState.length && Math.max(...usersState.map((u) => u.id))) + 1 || 1;
+    const newAdmin = {
+      id: nextId,
+      name,
+      username,
+      role: role === "admin" ? "admin" : "staff",
+      subRole: role === "admin" ? "owner" : "staff",
+      type: "basic",
+      verified: false,
+      level: "",
+      badge: "Admin",
+      businessName: ``,
+      profileImage: profileDataUrl || "",
+      businessLogo: null,
+      idFront: null,
+      idBack: null,
+      activeAds: 0,
+      activeAdIds: [],
+      joined: new Date().toISOString(),
+      reviewsCount: 0,
+      rating: 0,
+      supportPercent: 0,
+      email: "",
+      phonePrimary: "",
+      phoneSecondary: null,
+      paymentAccount: null,
+      accountName: null,
+      accountNumber: null,
+      nationalId: null,
+      mobileNetwork: null,
+      passkey,
+      notes: "Created via admin UI",
+      applications: [],
+      locations: [],
+      muted: false,
+      deleted: false,
+      comments: [],
+    };
+    setUsersState((prev) => [newAdmin, ...prev]);
+    window.alert(`Admin ${name} created.`);
+  };
+
+  const handleDeleteUser = (id) => {
+    setUsersState((prev) => prev.filter((u) => u.id !== id));
+    if (selectedUser?.id === id) setSelectedUser(null);
+  };
+
+  // compute aggregated reviews from comments if aggregatedReviews missing
+  const computeAggregatedFromComments = (comments = []) => {
+    if (!Array.isArray(comments) || comments.length === 0) {
+      return { averageRating: 0, totalReviews: 0, ratingBreakdown: {} };
+    }
+    const breakdown = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    let sum = 0;
+    comments.forEach((c) => {
+      const s = Math.max(0, Math.min(5, Number(c?.stars || 0)));
+      const star = Math.floor(s) || 0;
+      if (star >= 1 && star <= 5) breakdown[star] = (breakdown[star] || 0) + 1;
+      sum += s;
+    });
+    const total = comments.length;
+    const average = total ? sum / total : 0;
+    return {
+      averageRating: Number(average.toFixed(2)),
+      totalReviews: total,
+      ratingBreakdown: breakdown,
+    };
+  };
+
+  // ----------- New handlers for selectedUser controls -------------
+  const idStatusOptions = ["verified", "not verified"];
+  const levelOptions = ["high", "middle", "low"];
+
+  const handleSetIdStatus = (opt) => {
+    if (!selectedUser) return;
+    const newVerified = String(opt).toLowerCase() === "verified";
+    const updated = { ...selectedUser, verified: newVerified };
+    setUsersState((prev) =>
+      prev.map((u) => (u.id === updated.id ? updated : u))
+    );
+    setSelectedUser(updated);
+  };
+
+  const handleSetUserLevel = (opt) => {
+    if (!selectedUser) return;
+    const newLevel = String(opt).toLowerCase();
+    const updated = { ...selectedUser, level: newLevel };
+    setUsersState((prev) =>
+      prev.map((u) => (u.id === updated.id ? updated : u))
+    );
+    setSelectedUser(updated);
+  };
+
+  const handleToggleMute = () => {
+    if (!selectedUser) return;
+    const updated = { ...selectedUser, muted: !Boolean(selectedUser.muted) };
+    setUsersState((prev) =>
+      prev.map((u) => (u.id === updated.id ? updated : u))
+    );
+    setSelectedUser(updated);
+  };
+
+  // ---------------------------------------------------------------
 
   return (
     <div className={styles.usersContainer}>
@@ -220,6 +368,7 @@ export const Users = () => {
             <>
               <Dropdown
                 label="Status"
+                useDefault={true}
                 open={openStatus}
                 setOpen={setOpenStatus}
                 options={statusOptions}
@@ -229,28 +378,26 @@ export const Users = () => {
               <Dropdown
                 label="Promo"
                 open={openPromo}
+                useDefault={true}
                 setOpen={setOpenPromo}
                 options={promoOptions}
                 value={selectedPromo}
                 onSelect={(v) => setSelectedPromo(v)}
               />
-              <Dropdown
-                label="Ad Type"
-                open={openAdType}
-                setOpen={setOpenAdType}
-                options={adTypeOptions}
-                value={selectedAdType}
-                onSelect={(v) => setSelectedAdType(v)}
-              />
 
               <button
                 className={styles.createAdminButton}
-                onClick={() => setCreateAdmin((prev) => !prev)}
+                onClick={() => {
+                  setCreateAdmin((prev) => !prev);
+                  setSelectedPromo("all");
+                  setSelectedStatus("all");
+                }}
               >
                 Create Admin
               </button>
             </>
           )}
+
           {(selectedUser || createAdmin) && (
             <button
               onClick={() => {
@@ -265,20 +412,54 @@ export const Users = () => {
               <p>Return</p>
             </button>
           )}
+
           {selectedUser && (
             <>
-              <button className={styles.dropDownSetterButton}>
-                <p>ID Status</p>
-                <Caret />
+              {/* ID Status dropdown (uses same Dropdown structure & classes) */}
+              <Dropdown
+                label="ID Status"
+                useDefault={false}
+                open={openIdStatus}
+                setOpen={setOpenIdStatus}
+                options={idStatusOptions}
+                value={selectedUser?.verified ? "verified" : "not verified"}
+                onSelect={(opt) => handleSetIdStatus(opt)}
+              />
+
+              {/* Level / Status dropdown */}
+              <Dropdown
+                label="Status"
+                useDefault={false}
+                open={openUserLevel}
+                setOpen={setOpenUserLevel}
+                options={levelOptions}
+                value={selectedUser?.level ?? "unknown"}
+                onSelect={(opt) => handleSetUserLevel(opt)}
+              />
+
+              <button
+                className={styles.muteButton}
+                onClick={() => {
+                  handleToggleMute();
+                }}
+              >
+                {selectedUser?.muted ? "Unmute" : "Mute"}
               </button>
 
-              <button className={styles.dropDownSetterButton}>
-                <p>Status</p>
-                <Caret />
+              <button
+                className={styles.deleteButton}
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      `Delete ${selectedUser?.name}? This cannot be undone.`
+                    )
+                  ) {
+                    handleDeleteUser(selectedUser.id);
+                  }
+                }}
+              >
+                Delete
               </button>
-
-              <button className={styles.muteButton}>Mute</button>
-              <button className={styles.deleteButton}>Delete</button>
             </>
           )}
         </div>
@@ -292,7 +473,6 @@ export const Users = () => {
             onChange={(e) => {
               setSearchInput(e.target.value);
               setSelectedUser(null);
-              // setCreateAdmin(false);
             }}
           />
         </div>
@@ -343,6 +523,7 @@ export const Users = () => {
                 <input defaultValue={selectedUser?.nationalId} />
               </div>
             </div>
+
             <div className={styles.userColumn}>
               <div className={styles.idImages}>
                 <div className={styles.idImage}>
@@ -375,16 +556,19 @@ export const Users = () => {
                 <input defaultValue={selectedUser?.mobileNetwork} />
               </div>
             </div>
+
             <div className={styles.userColumn}>
-              {/* SAFELY read aggregatedReviews from selectedUser, provide defaults */}
+              {/* SAFELY read aggregatedReviews from selectedUser, compute from comments if missing */}
               {(() => {
-                const agg = selectedUser?.aggregatedReviews ?? {
-                  averageRating: 0,
-                  totalReviews: 0,
-                  ratingBreakdown: {},
-                };
+                const comments = Array.isArray(selectedUser?.comments)
+                  ? selectedUser.comments
+                  : [];
+                const agg =
+                  selectedUser?.aggregatedReviews ??
+                  computeAggregatedFromComments(comments);
                 const totalReviews = agg.totalReviews || 0;
                 const breakdown = agg.ratingBreakdown || {};
+
                 return (
                   <div className={styles.reviewsBox}>
                     <div className={styles.reviewColumn}>
@@ -398,38 +582,39 @@ export const Users = () => {
                     </div>
 
                     <ul className={styles.reviewColumn}>
-                      {Object.entries(breakdown).length === 0 ? (
+                      {Object.keys(breakdown).length === 0 ? (
                         <li className={styles.starRatingEmpty}>
                           No ratings yet
                         </li>
                       ) : (
-                        Object.entries(breakdown).map(([star, count]) => {
-                          const total = Object.values(breakdown).reduce(
-                            (a, b) => a + b,
-                            0
-                          );
-                          const pct = total
-                            ? ((count / total) * 100).toFixed(1)
-                            : 0;
-                          return (
-                            <li key={star} className={styles.starRating}>
-                              <span>
-                                <StarIcon color="#374957" size={15} />
-                              </span>
-                              <p>{star}</p>
-                              <div className={styles.reviewBar}>
-                                <div
-                                  className={styles.reviewProgress}
-                                  style={{
-                                    // use CSS var you had previously, fallback to width style
-                                    width: `${pct}%`,
-                                  }}
-                                />
-                              </div>
-                              <p>{pct}%</p>
-                            </li>
-                          );
-                        })
+                        Object.entries(breakdown)
+                          .sort((a, b) => Number(b[0]) - Number(a[0]))
+                          .map(([star, count]) => {
+                            const total = Object.values(breakdown).reduce(
+                              (a, b) => a + b,
+                              0
+                            );
+                            const pct = total
+                              ? ((count / total) * 100).toFixed(1)
+                              : 0;
+                            return (
+                              <li key={star} className={styles.starRating}>
+                                <span>
+                                  <StarIcon color="#374957" size={15} />
+                                </span>
+                                <p>{star}</p>
+                                <div className={styles.reviewBar}>
+                                  <div
+                                    className={styles.reviewProgress}
+                                    style={{
+                                      width: `${pct}%`,
+                                    }}
+                                  />
+                                </div>
+                                <p>{pct}%</p>
+                              </li>
+                            );
+                          })
                       )}
                     </ul>
                   </div>
@@ -450,7 +635,7 @@ export const Users = () => {
                   <StarIcon color="#374957" size={15} />
                   <p>All</p>
                 </button>
-                {Array?.from({ length: 5 })?.map?.((_, idx) => (
+                {Array.from({ length: 5 }).map((_, idx) => (
                   <button
                     className={styles.starFilterButton}
                     key={idx}
@@ -468,30 +653,48 @@ export const Users = () => {
                 ))}
               </div>
 
-              {/* comments: safely iterate over selectedUser.comments (if present) */}
+              {/* comments: filter by selectedFilter (-1 => all; else selectedFilter+1 star) */}
               <ul className={styles.commentsBox}>
-                {(selectedUser?.comments || []).map((comment, idx) => (
-                  <li key={idx} className={styles.comment}>
-                    <div className={styles.commentHeader}>
-                      <img
-                        src={comment?.user?.avatar}
-                        alt={comment?.user?.name}
-                        onError={(e) => onImgError(e)}
-                      />
-                      <div className={styles.commentHeaderDetails}>
-                        <small>{timeAgo(comment?.date)}</small>
-                        <p>{comment?.user?.name}</p>
-                        <ReviewStars
-                          bgColor="transparent"
-                          offColor="#8D93A5"
-                          paddingLeft={0}
-                          count={Math.floor(comment?.stars || 0)}
+                {(() => {
+                  const comments = Array.isArray(selectedUser?.comments)
+                    ? selectedUser.comments
+                    : [];
+                  const filteredComments =
+                    selectedFilter === -1
+                      ? comments
+                      : comments.filter(
+                          (c) => Number(c?.stars || 0) === selectedFilter + 1
+                        );
+
+                  if (!filteredComments.length) {
+                    return <li className={styles.empty}>No comments</li>;
+                  }
+
+                  return filteredComments.map((comment, idx) => (
+                    <li key={idx} className={styles.comment}>
+                      <div className={styles.commentHeader}>
+                        <img
+                          src={comment?.user?.avatar}
+                          alt={comment?.user?.name}
+                          onError={(e) => onImgError(e)}
                         />
+                        <div className={styles.commentHeaderDetails}>
+                          <small>{timeAgo(comment?.date)}</small>
+                          <p>{comment?.user?.name}</p>
+                          <ReviewStars
+                            bgColor="transparent"
+                            offColor="#8D93A5"
+                            paddingLeft={0}
+                            count={Math.floor(comment?.stars || 0)}
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div className={styles.commentMessage}>{comment?.text}</div>
-                  </li>
-                ))}
+                      <div className={styles.commentMessage}>
+                        {comment?.text}
+                      </div>
+                    </li>
+                  ));
+                })()}
               </ul>
             </div>
           </div>
@@ -499,28 +702,143 @@ export const Users = () => {
           <div className={styles.createAdminContainer}>
             <div className={styles.adminCreatorPanel}>
               <div className={styles.profilePic}>
-                <button>
-                  <NullImageIcon size={100} />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className={styles.profilePicButton}
+                >
+                  {createAdminForm.profileDataUrl ? (
+                    <img
+                      src={createAdminForm.profileDataUrl}
+                      alt="preview"
+                      className={styles.uploadedProfilePic}
+                    />
+                  ) : (
+                    <NullImageIcon size={100} />
+                  )}
+                  <div className={styles.addIcon}>
+                    <Plus />
+                  </div>
                 </button>
                 <p>Profile Image</p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={onCreateAdminFile}
+                />
               </div>
               <div className={styles.adminCreationInputs}>
-                <input type="text" placeholder="Full Name" />
-                <input type="text" placeholder="Username" />
-                <input type="text" placeholder="Pass Kry" />
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  value={createAdminForm.name}
+                  onChange={(e) =>
+                    setCreateAdminForm((p) => ({ ...p, name: e.target.value }))
+                  }
+                />
+                <input
+                  type="text"
+                  placeholder="Username"
+                  value={createAdminForm.username}
+                  onChange={(e) =>
+                    setCreateAdminForm((p) => ({
+                      ...p,
+                      username: e.target.value,
+                    }))
+                  }
+                />
+                <input
+                  type="text"
+                  placeholder="Pass Key"
+                  value={createAdminForm.passkey}
+                  onChange={(e) =>
+                    setCreateAdminForm((p) => ({
+                      ...p,
+                      passkey: e.target.value,
+                    }))
+                  }
+                />
                 <div className={styles.checkBoxesTray}>
-                  <div className={styles.checkBox}>
-                    <input type="checkbox" defaultChecked={true} />
+                  <label className={styles.checkBox}>
+                    <input
+                      type="checkbox"
+                      checked={createAdminForm.roleIsStaff}
+                      onChange={(e) =>
+                        setCreateAdminForm((p) => ({
+                          ...p,
+                          roleIsStaff: e.target.checked,
+                        }))
+                      }
+                    />
                     <p>Staff</p>
-                  </div>
-                  <div className={styles.checkBox}>
-                    <input type="checkbox" />
+                  </label>
+                  <label className={styles.checkBox}>
+                    <input
+                      type="checkbox"
+                      checked={!createAdminForm.roleIsStaff}
+                      onChange={(e) =>
+                        setCreateAdminForm((p) => ({
+                          ...p,
+                          roleIsStaff: !e.target.checked,
+                        }))
+                      }
+                    />
                     <p>Admin</p>
-                  </div>
+                  </label>
                 </div>
-                <button className={styles.addButton}>Add</button>
+
+                <div className={styles.actionButtonsTray}>
+                  <button
+                    className={styles.addButton}
+                    onClick={() => {
+                      if (
+                        !createAdminForm.name.trim() ||
+                        !createAdminForm.username.trim()
+                      ) {
+                        window.alert("Provide name and username.");
+                        return;
+                      }
+                      handleAddAdmin({
+                        name: createAdminForm.name.trim(),
+                        username: createAdminForm.username.trim(),
+                        passkey: createAdminForm.passkey.trim(),
+                        role: createAdminForm.roleIsStaff ? "staff" : "admin",
+                        profileDataUrl: createAdminForm.profileDataUrl || "",
+                      });
+                      setCreateAdminForm({
+                        name: "",
+                        username: "",
+                        passkey: "",
+                        roleIsStaff: true,
+                        profileDataUrl: "",
+                      });
+                      setCreateAdmin(false);
+                    }}
+                  >
+                    Add
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setCreateAdminForm({
+                        name: "",
+                        username: "",
+                        passkey: "",
+                        roleIsStaff: true,
+                        profileDataUrl: "",
+                      });
+                      setCreateAdmin(false);
+                    }}
+                    className={styles.cancelButton}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
+
             <div className={`${styles.usersList} ${styles.adminUsersList}`}>
               {filteredUsers.length === 0 ? (
                 <div className={styles.empty}>No users found</div>
@@ -541,7 +859,14 @@ export const Users = () => {
                       />
                       <div className={styles.userName}>{u?.name}</div>
                       <div className={styles.userRole}>~ {u?.role}</div>
-                      <button className={styles.adminDelete}>
+                      <button
+                        className={styles.adminDelete}
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          if (window.confirm(`Remove admin ${u.name}?`))
+                            handleDeleteUser(u.id);
+                        }}
+                      >
                         <ImageIcon src={TrashIcon} />
                       </button>
                     </div>
@@ -576,7 +901,9 @@ export const Users = () => {
                     onError={(e) => onImgError(e)}
                   />
                   <div className={styles.userName}>{u?.name}</div>
-                  <div className={styles.userLevel}>{u?.level} Level</div>
+                  <div className={styles.userLevel}>
+                    {u?.level} {u?.level ? "Level" : "---"}
+                  </div>
                   <div className={styles.userVerified}>
                     {u?.verified ? "Verified" : "Not Verified"}
                   </div>
