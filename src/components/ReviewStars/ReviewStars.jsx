@@ -19,7 +19,6 @@ export const ReviewStars = ({
       }}
     >
       {Array?.from({ length: 5 })?.map((_, idx) => {
-        console.log(count, idx);
         return (
           <StarIcon key={idx} color={idx < count ? "#374957" : offColor} />
         );

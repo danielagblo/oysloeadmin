@@ -450,12 +450,15 @@ export const Ads = () => {
         <div className={styles.adBox}>
           <div className={styles.adDetails}>
             <div className={styles.headerOne}>
-              <div className={styles.backButton}>
-                <button type="button" onClick={() => setSelectedRow(null)}>
+              <button
+                className={styles.backButton}
+                onClick={() => setSelectedRow(null)}
+              >
+                <button type="button">
                   <Caret />
                 </button>
                 <p>Return</p>
-              </div>
+              </button>
 
               <div className={styles.timeVerifiedBox}>
                 <div className={styles.time}>
