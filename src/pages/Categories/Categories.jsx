@@ -3,7 +3,9 @@ import styles from "./categories.module.css";
 import { SearchIcon } from "../../components/SVGIcons/SearchIcon";
 import { categories as initialData } from "../../api/categories";
 import { DragIcon } from "../../components/SVGIcons/DragIcon";
-import { EditIcon, TrashIcon } from "lucide-react";
+import { EditIcon } from "../../components/SVGIcons/EditIcon";
+import ImageIcon from "../../components/SVGIcons/ImageIcon";
+import TrashIcon from "../../assets/TrashIcon.png";
 
 import {
   DndContext,
@@ -97,7 +99,7 @@ function SortableListItem({
           aria-label="Edit"
           type="button"
         >
-          <EditIcon />
+          <EditIcon size={1} />
         </button>
         <button
           onClick={(e) => {
@@ -108,7 +110,7 @@ function SortableListItem({
           aria-label="Delete"
           type="button"
         >
-          <TrashIcon size={15} />
+          <ImageIcon src={TrashIcon} size={1.3} />
         </button>
       </div>
     </div>
