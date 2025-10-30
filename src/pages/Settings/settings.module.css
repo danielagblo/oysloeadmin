@@ -129,8 +129,8 @@
 }
 
 .feedbackGiver img {
-  width: 30px;
-  height: 30px;
+  width: 3vw;
+  height: 3vw;
   border-radius: var(--radius-full);
 }
 
@@ -195,7 +195,7 @@
 
 .resolveButton,
 .showButton {
-  padding: 5px var(--content-padding);
+  padding: 0.5vw var(--content-padding);
   background-color: var(--color-theme-red);
   border-radius: var(--radius-md);
   color: white;

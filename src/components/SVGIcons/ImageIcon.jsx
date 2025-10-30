@@ -1,9 +1,11 @@
 import React from "react";
 
-export default function ImageIcon({ src, size = 24, alt = "" }) {
+export default function ImageIcon({ src, size = 2, alt = "" }) {
+  const scaledSize = `${size}vw`;
+
   const style = {
-    width: size,
-    height: size,
+    width: scaledSize,
+    height: scaledSize,
     objectFit: "contain",
     display: "inline-block",
   };

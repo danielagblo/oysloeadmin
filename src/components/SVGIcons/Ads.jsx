@@ -1,11 +1,13 @@
 import React from "react";
 
-export const Ads = ({ size = 30 }) => {
+export const Ads = ({ size = 1 }) => {
+  const scaledSize = `${size}vw`;
+
   return (
     <svg
-      width={size}
-      height={size}
-      viewBox={`0 0 ${size} ${size}`}
+      width={scaledSize}
+      height={scaledSize}
+      viewBox={`0 0 30 32`}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       xmlns:xlink="http://www.w3.org/1999/xlink"

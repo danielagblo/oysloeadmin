@@ -4,11 +4,6 @@
   position: relative;
 }
 
-.header {
-  position: sticky;
-  top: 0;
-}
-
 .header,
 .dropDownTray {
   width: 100%;
@@ -26,12 +21,12 @@
 }
 
 .dropdown {
-  position: relative;
+  position: relative !important;
 }
 
 .dropdown,
 .backButton {
-  padding: 5px 10px;
+  padding: 0.5vw 1vw;
   border-radius: var(--radius-xl);
   background-color: var(--color-bg);
   width: fit-content;
@@ -49,8 +44,8 @@
 .backButton button {
   /* padding: 5px; */
   border-radius: var(--radius-full);
-  width: 30px;
-  height: 30px;
+  width: 2vw;
+  height: 2vw;
   background-color: var(--color-bg-secondary);
   display: grid;
   place-content: center;
@@ -107,8 +102,8 @@
 }
 
 .thumb {
-  width: 80px;
-  height: 80px;
+  width: 6vw;
+  height: 6vw;
   border-radius: var(--radius-ml);
 }
 
@@ -117,8 +112,8 @@
 }
 
 .userAvater {
-  width: 60px;
-  height: 60px;
+  width: 4vw;
+  height: 4vw;
   border-radius: var(--radius-full);
 }
 
@@ -188,7 +183,7 @@
   justify-content: space-between;
   align-items: center;
   gap: var(--content-padding);
-  padding: 5px 10px;
+  padding: 0.2vw 0.5vw;
   border-radius: var(--radius-md);
   font-size: 0.75rem;
 }
@@ -240,8 +235,8 @@
 }
 
 .adImage {
-  width: 150px;
-  height: 130px;
+  width: 11vw;
+  height: 9vw;
   border-radius: var(--radius-md);
 }
 
@@ -254,8 +249,8 @@
 
 .image span button {
   background-color: var(--color-bg-secondary);
-  width: 30px;
-  height: 30px;
+  width: 2vw;
+  height: 2vw;
   display: grid;
   place-content: center;
   border-radius: var(--radius-full);
@@ -288,6 +283,10 @@
 
 .activate {
   background-color: var(--color-theme-green);
+}
+.delete {
+  background-color: var(--color-theme-red);
+  color: white;
 }
 
 .explainSuspension {
@@ -324,7 +323,7 @@
 
 .adPurpose {
   background-color: white;
-  padding: 5px var(--content-padding);
+  padding: 0.5vw var(--content-padding);
   flex-direction: column;
   align-items: flex-end;
   border-radius: var(--radius-md);
@@ -356,8 +355,8 @@
 }
 
 .head img {
-  width: 100px;
-  height: 100px;
+  width: 10vw;
+  height: 10vw;
   border-radius: var(--radius-full);
   border: 5px solid var(--color-theme-green);
   outline: 10px solid var(--color-bg-secondary);
@@ -513,14 +512,14 @@
 }
 
 .commentHeader img {
-  width: 60px;
-  height: 60px;
+  width: 4.5vw;
+  height: 4.5vw;
   border-radius: var(--radius-md);
 }
 
 .dropdownMenu {
   position: absolute;
-  top: 90%;
+  top: 3%;
   background-color: var(--color-bg);
   display: flex;
   justify-content: flex-start;
@@ -554,4 +553,46 @@
 .dropDownUserSearch input {
   border: none;
   outline: none;
+}
+
+@media (max-width: 1024px) {
+  .adsContainer {
+    padding: 5px;
+  }
+  .header,
+  .dropDownTray,
+  .headerTwo {
+    flex-wrap: wrap;
+  }
+
+  .header {
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .search input,
+  .search {
+    width: 100%;
+  }
+
+  .adBox {
+    flex-direction: column;
+  }
+
+  .adDetails {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .image {
+    scale: 0.9;
+  }
+  .images {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .dropDownTray {
+    justify-content: center;
+    gap: 1rem;
+  }
 }

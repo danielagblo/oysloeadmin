@@ -69,8 +69,8 @@
 }
 
 .avatar {
-  width: 40px;
-  height: 40px;
+  width: 3vw;
+  height: 3vw;
   border-radius: var(--radius-full);
   position: absolute;
   top: -30px;
@@ -116,13 +116,13 @@
 }
 
 .adMessage img {
-  width: 60px;
-  height: 60px;
+  width: 5vw;
+  height: 5vw;
   border-radius: var(--radius-ml);
 }
 
 .dropdown {
-  padding: 5px 10px;
+  padding: 0.5vw 1vw;
   border-radius: var(--radius-xl);
   background-color: var(--color-bg);
   width: fit-content;
@@ -139,8 +139,8 @@
 .dropdown button {
   /* padding: 5px; */
   border-radius: var(--radius-full);
-  width: 30px;
-  height: 30px;
+  width: 2vw !important;
+  height: 2vw !important;
   background-color: var(--color-bg-secondary);
   display: grid;
   place-content: center;
@@ -218,7 +218,7 @@
 
 .dropdown,
 .backButton {
-  padding: 5px 10px;
+  padding: 0.5vw 1vw;
   border-radius: var(--radius-xl);
   background-color: var(--color-bg);
   width: fit-content;
@@ -302,8 +302,8 @@
 }
 
 .userAvatar {
-  width: 60px;
-  height: 60px;
+  width: 4vw;
+  height: 4vw;
   border-radius: var(--radius-full);
 }
 
@@ -329,8 +329,8 @@
 }
 
 .userLevel span {
-  width: 20px;
-  height: 20px;
+  width: 1vw;
+  height: 1vw;
   background-color: var(--color-theme-green);
   display: grid;
   place-content: center;
@@ -355,6 +355,7 @@
 .selectRow input {
   accent-color: var(--color-theme-green);
   cursor: pointer;
+  width: 2vw;
 }
 
 .usersCount {
@@ -402,8 +403,8 @@
 }
 
 .adImg {
-  width: 60px;
-  height: 60px;
+  width: 4vw;
+  height: 4vw;
   border-radius: var(--radius-md);
 }
 
@@ -423,7 +424,7 @@
   width: calc(100% - (2 * var(--content-padding)));
   background-color: var(--color-theme-green);
   border-radius: var(--radius-md);
-  padding: 5px var(--content-padding);
+  padding: 0.5vw var(--content-padding);
 }
 
 .couponAmountOptions {

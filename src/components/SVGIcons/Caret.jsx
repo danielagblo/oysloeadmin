@@ -1,11 +1,13 @@
 import React from "react";
 
-export const Caret = ({ size = 16 }) => {
+export const Caret = ({ size = 1 }) => {
+  const scaledSize = `${size}vw`;
+
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={size}
-      height={size}
+      width={scaledSize}
+      height={scaledSize}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"

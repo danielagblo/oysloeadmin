@@ -39,18 +39,23 @@
   background-color: var(--color-bg-secondary);
   border-radius: var(--radius-ml);
   padding: var(--content-padding);
-  gap: var(--content-padding);
+  gap: calc(2 * var(--content-padding));
 }
 
 .row > * {
-  /* width: 100%; */
+  width: 100%;
   /* border: 2px solid red; */
   /* overflow: clip; */
 }
 
+.row > p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .row img {
-  width: 80px;
-  height: 80px;
+  width: 5vw;
+  height: 5vw;
   border-radius: var(--radius-full);
 }
 
@@ -153,6 +158,9 @@
   background-color: var(--color-bg);
   padding: var(--content-padding) calc(var(--content-padding) * 2);
   border-radius: var(--radius-xl);
+  width: fit-content;
+  text-align: center;
+  text-wrap: nowrap;
 }
 
 .download {

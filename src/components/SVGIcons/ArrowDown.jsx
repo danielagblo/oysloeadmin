@@ -1,10 +1,12 @@
 import React from "react";
 
-export const ArrowDown = ({ size = 13 }) => {
+export const ArrowDown = ({ size = 1 }) => {
+  const scaledSize = `${size}vw`;
+
   return (
     <svg
-      width={size}
-      height={size - 4}
+      width={scaledSize}
+      height={scaledSize}
       viewBox="0 0 13 9"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

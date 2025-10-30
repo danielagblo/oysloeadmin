@@ -26,7 +26,7 @@
 
 .dropdown,
 .backButton {
-  padding: 5px 10px;
+  padding: 0.5vw 1vw;
   border-radius: var(--radius-xl);
   background-color: var(--color-bg);
   width: fit-content;
@@ -56,9 +56,6 @@
 
 .backButton span {
   rotate: 90deg;
-}
-.backButton p {
-  padding: 5px 10px;
 }
 
 .search {
@@ -107,7 +104,7 @@
 .dropDownSetterButton,
 .muteButton,
 .deleteButton {
-  padding: 5px 10px;
+  padding: 0.5vw 1vw;
   border-radius: var(--radius-md);
   background-color: var(--color-theme-red);
   color: white;
@@ -160,15 +157,14 @@
 }
 
 .userAvatar {
-  width: 80px;
-  height: 80px;
+  width: 5vw;
+  height: 5vw;
   border-radius: var(--radius-full);
   object-fit: fill;
-  width: 80px;
 }
 
 .userAvatarTitle {
-  width: 80px;
+  width: 5vw;
   text-wrap: nowrap;
 }
 
@@ -228,7 +224,7 @@
 
 .reviewBar {
   min-width: 90%;
-  height: 10px;
+  height: 0.5vw;
   background-color: var(--color-muted-2);
   border-radius: var(--radius-md);
   position: relative;
@@ -263,8 +259,8 @@
 }
 
 .commentHeader img {
-  width: 60px;
-  height: 60px;
+  width: 4vw;
+  height: 4vw;
   border-radius: var(--radius-md);
   object-fit: cover;
 }
@@ -314,16 +310,16 @@
 }
 
 .profileImage img {
-  width: 80px;
-  height: 80px;
+  width: 5vw;
+  height: 5vw;
   border-radius: var(--radius-full);
   background-color: var(--color-muted-1);
   object-fit: cover;
 }
 
 .idImage img {
-  width: 200px;
-  height: 150px;
+  width: 12vw;
+  height: 8vw;
   border-radius: var(--radius-md);
   background-color: var(--color-muted-1);
   object-fit: cover;
@@ -498,4 +494,39 @@ label,
   position: absolute;
   bottom: 10%;
   right: 10%;
+}
+
+@media (max-width: 1024px) {
+  .userInfo,
+  .content {
+    flex-direction: column;
+    width: 100%;
+  }
+  .userColumn {
+    width: 100% !important;
+  }
+  .dropDownTray,
+  .header,
+  .starFilters {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .starFilters {
+    justify-content: flex-start;
+  }
+
+  .search,
+  .search input,
+  .commentsBox > * {
+    width: 100%;
+    /* border: 2px solid red; */
+  }
+}
+
+@media (max-width: 768px) {
+  .idImages {
+    flex-direction: column;
+    width: 100%;
+  }
 }

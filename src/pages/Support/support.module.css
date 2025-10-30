@@ -110,8 +110,8 @@
 }
 
 .imageBox {
-  width: 60px;
-  height: 60px;
+  width: 4vw;
+  height: 4vw;
   position: relative;
 }
 
@@ -140,8 +140,8 @@
 .count {
   background-color: var(--color-text);
   color: var(--color-bg-secondary);
-  width: 40px;
-  height: 40px;
+  width: 2vw;
+  height: 2vw;
   border-radius: var(--radius-full);
   display: grid;
   place-content: center;
@@ -246,8 +246,8 @@
 }
 
 .chatParticipant img {
-  width: 44px;
-  height: 44px;
+  width: 3vw;
+  height: 3vw;
   border-radius: var(--radius-full);
 }
 
@@ -321,8 +321,8 @@
 
 /* small avatar besides messages */
 .messageAvatar img {
-  width: 32px;
-  height: 32px;
+  width: 2.1vw;
+  height: 2.1vw;
   border-radius: var(--radius-full);
   position: absolute;
   top: -5px;
@@ -498,8 +498,8 @@
 }
 
 .userItem img {
-  width: 60px;
-  height: 60px;
+  width: 4vw;
+  height: 4vw;
   border-radius: var(--radius-full);
 }
 .selectionRadio {

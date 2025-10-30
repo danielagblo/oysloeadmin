@@ -1,10 +1,12 @@
 import React from "react";
 
-export const CheckMark = ({ size = 10 }) => {
+export const CheckMark = ({ size = 0.5 }) => {
+  const scaledSize = `${Number(size)}vw`;
+
   return (
     <svg
-      width={size}
-      height={size - 3}
+      width={scaledSize}
+      height={scaledSize}
       viewBox="0 0 12 9"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

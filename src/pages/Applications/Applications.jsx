@@ -187,7 +187,7 @@ export const Applcations = () => {
 
             <div className={styles.downloadAndTime}>
               <button className={styles.download}>
-                <ImageIcon src={Download} />
+                <ImageIcon size={1.5} src={Download} />
                 <p>Download</p>
               </button>
               <p>{application?.dateApplied ?? application?.createdAt ?? ""}</p>

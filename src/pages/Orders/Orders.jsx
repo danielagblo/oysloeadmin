@@ -136,7 +136,7 @@ export const Orders = () => {
               <ul>
                 {tier?.tagLines?.map((tag, idx) => (
                   <li key={idx}>
-                    <CheckMark size={12} /> {tag}
+                    <CheckMark size={1} /> {tag}
                   </li>
                 ))}
               </ul>
@@ -154,7 +154,7 @@ export const Orders = () => {
               className={styles.editicon}
               onClick={() => setOpenModal((prev) => (prev === i ? -1 : i))}
             >
-              <EditIcon size={25} />
+              <EditIcon />
             </button>
 
             {openModal === i && (
@@ -189,9 +189,12 @@ export const Orders = () => {
         <div className={styles.tables}>
           <div className={styles.header}>
             <div className={styles.dropbox}>
-              <button className={styles.dropdown}>
+              <button
+                className={styles.dropdown}
+                onClick={() => setOpenPromo((p) => !p)}
+              >
                 <p>{promoLabel}</p>
-                <button onClick={() => setOpenPromo((p) => !p)}>
+                <button>
                   <Caret />
                 </button>
               </button>
@@ -221,9 +224,12 @@ export const Orders = () => {
             </div>
 
             <div className={styles.dropbox}>
-              <button className={styles.dropdown}>
+              <button
+                className={styles.dropdown}
+                onClick={() => setOpenTime((p) => !p)}
+              >
                 <p>{timeLabel === "all" ? "Time" : timeLabel}</p>
-                <button onClick={() => setOpenTime((p) => !p)}>
+                <button>
                   <Caret />
                 </button>
               </button>

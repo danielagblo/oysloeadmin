@@ -97,7 +97,7 @@ function SortableListItem({
           aria-label="Edit"
           type="button"
         >
-          <EditIcon size={15} />
+          <EditIcon />
         </button>
         <button
           onClick={(e) => {

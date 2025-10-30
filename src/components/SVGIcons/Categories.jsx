@@ -1,10 +1,12 @@
 import React from "react";
 
-export const Categories = ({ size = 30 }) => {
+export const Categories = ({ size = 1 }) => {
+  const scaledSize = `${size}vw`;
+
   return (
     <svg
-      width={size}
-      height={size}
+      width={scaledSize}
+      height={scaledSize}
       viewBox="0 0 41 43"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

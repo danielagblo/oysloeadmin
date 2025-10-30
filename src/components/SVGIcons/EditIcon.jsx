@@ -1,10 +1,12 @@
 import React from "react";
 
-export const EditIcon = ({ size = 10 }) => {
+export const EditIcon = ({ size = 1.5 }) => {
+  const scaledSize = `${size}vw`;
+
   return (
     <svg
-      width={size}
-      height={size}
+      width={scaledSize}
+      height={scaledSize}
       viewBox="0 0 27 26"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

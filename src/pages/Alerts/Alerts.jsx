@@ -450,9 +450,13 @@ export const Alerts = () => {
         <div className={styles.optionsInputs}>
           <div className={styles.dropdowns}>
             {/* Create Ad */}
-            <button className={styles.dropdown} type="button">
+            <button
+              className={styles.dropdown}
+              type="button"
+              onClick={() => setOpenAdSelector((p) => !p)}
+            >
               <p>Create Ad</p>
-              <button onClick={() => setOpenAdSelector((p) => !p)}>
+              <button>
                 <Caret />
               </button>
               {openAdSelector && (
@@ -527,14 +531,15 @@ export const Alerts = () => {
             </button>
 
             {/* Create Coupon */}
-            <button className={styles.dropdown}>
+            <button
+              className={styles.dropdown}
+              onClick={() => {
+                setOpenCouponCreator((p) => !p);
+                setCouponCode(genCouponCode(8));
+              }}
+            >
               <p>Create Coupon</p>
-              <button
-                onClick={() => {
-                  setOpenCouponCreator((p) => !p);
-                  setCouponCode(genCouponCode(8));
-                }}
-              >
+              <button>
                 <Caret />
               </button>
               {openCouponCreator && (

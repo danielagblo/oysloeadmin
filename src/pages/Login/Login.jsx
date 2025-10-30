@@ -17,11 +17,11 @@ export const Login = ({ setLoggedin }) => {
       <form>
         <h2>Oysloe Admin</h2>
         <div className={styles.inputField}>
-          <ImageIcon src={Email} size={25} alt="Email" />
+          <ImageIcon src={Email} size={1.5} alt="Email" />
           <input type="email" placeholder="Email Address" required />
         </div>
         <div className={styles.inputField}>
-          <ImageIcon src={Password} size={25} alt="Email" />
+          <ImageIcon src={Password} size={1.5} alt="Email" />
           <input type="password" placeholder="Password" required />
         </div>
         <button onClick={() => handleLogin(setLoggedin)}>Login</button>

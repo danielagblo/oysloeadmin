@@ -21,47 +21,47 @@ export const SideBar = ({ openSideBar, setOpenSideBar, setLoggedin }) => {
     {
       page: "Dashboard",
       link: "/",
-      icon: () => <Dashboard size={25} />,
+      icon: () => <Dashboard size={2} />,
     },
     {
       page: "Ads",
       link: "/ads",
-      icon: () => <ImageIcon src={Ads} size={25} alt="Ads Icon" />,
+      icon: () => <ImageIcon src={Ads} alt="Ads Icon" />,
     },
     {
       page: "Orders",
       link: "/orders",
-      icon: () => <ImageIcon src={Order} size={25} alt="Ads Icon" />,
+      icon: () => <ImageIcon src={Order} alt="Ads Icon" />,
     },
     {
       page: "Users",
       link: "/users",
-      icon: () => <ImageIcon src={Users} size={25} alt="Ads Icon" />,
+      icon: () => <ImageIcon src={Users} alt="Ads Icon" />,
     },
     {
       page: "Support",
       link: "/support",
-      icon: () => <Support size={25} />,
+      icon: () => <Support />,
     },
     {
       page: "Alerts",
       link: "/alerts",
-      icon: () => <ImageIcon src={Alerts} size={25} alt="Ads Icon" />,
+      icon: () => <ImageIcon src={Alerts} alt="Ads Icon" />,
     },
     {
       page: "Categories",
       link: "/categories",
-      icon: () => <Categories size={30} />,
+      icon: () => <Categories size={2} />,
     },
     {
       page: "Applicatons",
       link: "/applications",
-      icon: () => <ImageIcon src={Applications} size={25} alt="Ads Icon" />,
+      icon: () => <ImageIcon src={Applications} alt="Ads Icon" />,
     },
     {
       page: "Locations",
       link: "/locations",
-      icon: () => <Location size={25} />,
+      icon: () => <Location />,
     },
   ];
 
@@ -85,6 +85,7 @@ export const SideBar = ({ openSideBar, setOpenSideBar, setLoggedin }) => {
             className={({ isActive }) =>
               isActive ? styles.active : styles.link
             }
+            onClick={() => setOpenSideBar((prev) => !prev)}
           >
             {link?.icon()}
             <p>{link?.page}</p>
@@ -95,15 +96,16 @@ export const SideBar = ({ openSideBar, setOpenSideBar, setLoggedin }) => {
         <NavLink
           to="/settings"
           className={({ isActive }) => (isActive ? styles.active : styles.link)}
+          onClick={() => setOpenSideBar((prev) => !prev)}
         >
-          <Settings size={25} />
+          <Settings size={2} />
           <p>Settings</p>
         </NavLink>
         <button
           className={styles.link}
           onClick={() => handleLogout(setLoggedin)}
         >
-          <Logout size={25} />
+          <Logout size={2} />
           <p>Logout</p>
         </button>
       </div>

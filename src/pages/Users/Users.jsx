@@ -600,7 +600,7 @@ export const Users = () => {
                             return (
                               <li key={star} className={styles.starRating}>
                                 <span>
-                                  <StarIcon color="#374957" size={15} />
+                                  <StarIcon color="#374957" size={1} />
                                 </span>
                                 <p>{star}</p>
                                 <div className={styles.reviewBar}>
@@ -632,7 +632,7 @@ export const Users = () => {
                   }}
                   onClick={() => setSelectedFilter(-1)}
                 >
-                  <StarIcon color="#374957" size={15} />
+                  <StarIcon color="#374957" size={1} />
                   <p>All</p>
                 </button>
                 {Array.from({ length: 5 }).map((_, idx) => (
@@ -647,7 +647,7 @@ export const Users = () => {
                     }}
                     onClick={() => setSelectedFilter(idx)}
                   >
-                    <StarIcon color="#374957" size={15} />
+                    <StarIcon color="#374957" size={1} />
                     <p>{idx + 1}</p>
                   </button>
                 ))}
@@ -714,7 +714,7 @@ export const Users = () => {
                       className={styles.uploadedProfilePic}
                     />
                   ) : (
-                    <NullImageIcon size={100} />
+                    <NullImageIcon size={5} />
                   )}
                   <div className={styles.addIcon}>
                     <Plus />

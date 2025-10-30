@@ -1,10 +1,12 @@
 import React from "react";
 
-export const DragIcon = ({ size = 16 }) => {
+export const DragIcon = ({ size = 1 }) => {
+  const scaledSize = `${size}vw`;
+
   return (
     <svg
-      width={size}
-      height={size}
+      width={scaledSize}
+      height={scaledSize}
       viewBox="0 0 16 17"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

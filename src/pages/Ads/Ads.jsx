@@ -469,7 +469,7 @@ export const Ads = () => {
                 <div className={styles.isVerified}>
                   {selectedRow?.seller?.verified ? (
                     <div className={styles.verified}>
-                      <CheckMark />
+                      <CheckMark size={1} />
                       <p>Verified</p>
                     </div>
                   ) : (
@@ -506,7 +506,7 @@ export const Ads = () => {
                   />
                   <span className={styles.delIcon}>
                     <button onClick={() => deleteImages(idx)}>
-                      <ImageIcon src={TrashIcon} size={20} alt="Ads Icon" />
+                      <ImageIcon src={TrashIcon} size={1.5} alt="Ads Icon" />
                     </button>
                   </span>
                 </li>
@@ -519,7 +519,7 @@ export const Ads = () => {
               }}
             />
 
-            {selectedRow?.status !== "Suspended" && (
+            {selectedRow?.status !== "Suspended" ? (
               <div className={styles.buttonRack}>
                 <div className={styles.suspensionRack}>
                   <textarea
@@ -533,6 +533,7 @@ export const Ads = () => {
                   </button>
                   {selectedRow?.status === "Pending" && (
                     <button
+                      disabled={!selectedRow?.verified}
                       className={`${styles.statusButton} ${styles.activate}`}
                     >
                       Activate Ad
@@ -540,6 +541,11 @@ export const Ads = () => {
                   )}
                 </div>
               </div>
+            ) : (
+              // Add the delete ad functionality
+              <button className={`${styles.statusButton} ${styles.delete}`}>
+                Delete Ad
+              </button>
             )}
           </div>
 
@@ -629,7 +635,7 @@ export const Ads = () => {
               />
               <NavLink to="/support" className={styles.backButton}>
                 <p>Chat</p>
-                <Support size={20} />
+                <Support size={1} />
               </NavLink>
               <h1>{selectedRow?.seller?.name}</h1>
 
@@ -678,7 +684,7 @@ export const Ads = () => {
                   return (
                     <li key={star} className={styles.starRating}>
                       <span>
-                        <StarIcon color="#374957" size={15} />
+                        <StarIcon color="#374957" size={1} />
                       </span>
                       <p>{star}</p>
                       <div className={styles.reviewBar}>

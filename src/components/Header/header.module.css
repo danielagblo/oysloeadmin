@@ -44,8 +44,8 @@
 }
 
 .avatar {
-  width: 70px;
-  height: 70px;
+  width: 4.3vw;
+  height: 4.3vw;
   border-radius: var(--radius-full);
   overflow: hidden;
   border: 8px solid var(--color-green);

@@ -1,5 +1,5 @@
 .reviewContainer {
   background-color: #d9d9d9;
-  padding: 5px var(--content-padding);
+  padding: 0.5vw var(--content-padding);
   border-radius: var(--radius-md);
 }

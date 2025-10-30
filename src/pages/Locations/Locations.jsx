@@ -17,7 +17,10 @@ import {
   horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { EditIcon, PlusIcon, TrashIcon } from "lucide-react";
+import { EditIcon } from "../../components/SVGIcons/EditIcon";
+import ImageIcon from "../../components/SVGIcons/ImageIcon";
+import TrashIcon from "../../assets/TrashIcon.png";
+import { PlusIcon } from "lucide-react";
 import { DragIcon } from "../../components/SVGIcons/DragIcon";
 
 export const Locations = () => {
@@ -325,7 +328,7 @@ function SortableTown({ id, regionName, onEditTown, onDeleteTown }) {
         onPointerDown={(e) => e.stopPropagation()} // prevent accidental drag start
         aria-label={`Edit ${id}`}
       >
-        <EditIcon size={16} />
+        <EditIcon size={1} />
       </button>
       <button
         onClick={(e) => {
@@ -335,7 +338,7 @@ function SortableTown({ id, regionName, onEditTown, onDeleteTown }) {
         onPointerDown={(e) => e.stopPropagation()}
         aria-label={`Delete ${id}`}
       >
-        <TrashIcon size={16} />
+        <ImageIcon src={TrashIcon} size={1.3} />
       </button>
     </li>
   );
@@ -350,10 +353,10 @@ function TownPreview({ id }) {
       </span>
       <p>{id}</p>
       <div>
-        <EditIcon size={16} />
+        <EditIcon size={1} />
       </div>
       <div>
-        <TrashIcon size={16} />
+        <ImageIcon src={TrashIcon} size={1.3} />
       </div>
     </li>
   );

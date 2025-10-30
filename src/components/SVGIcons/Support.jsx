@@ -1,10 +1,12 @@
 import React from "react";
 
-export const Support = ({ size = 30 }) => {
+export const Support = ({ size = 2 }) => {
+  const scaledSize = `${size}vw`;
+
   return (
     <svg
-      width={size}
-      height={size}
+      width={scaledSize}
+      height={scaledSize}
       viewBox="0 0 30 31"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
