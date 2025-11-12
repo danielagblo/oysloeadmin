@@ -30,10 +30,6 @@ function App() {
     }
   }, []);
 
-  useEffect(() => {
-    console.log("Currently LoggedIn: ", loggedin);
-  }, [loggedin]);
-
   return (
     <BrowserRouter>
       {!loggedin ? (
@@ -70,3 +66,4 @@ function App() {
 }
 
 export default App;
+``;
