@@ -96,7 +96,7 @@ function matchesTimePeriod(row, period) {
   return true;
 }
 
-export const Applcations = () => {
+export const Applications = () => {
   const [rowData, setRowData] = useState(null);
   const [query, setQuery] = useState("");
   const [selectedTime, setSelectedTime] = useState("All");
