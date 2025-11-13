@@ -1,1413 +1,652 @@
-export const adsData = [
-  {
-    id: 1,
-    title: "Toyota Hilux 2025 VX",
-    productCategory: { category: "Vehicles", subcategory: "Cars" },
-    adPurpose: "Sale",
-    price: 620000,
-    currency: "GHS",
-    location: { city: "Accra", area: "Spintex", street: "Spintex Road 218" },
-    condition: "Brand New",
-    status: "Active",
-    suspensionReason: null,
-    approvedBy: "Jeff",
-    approvedOn: "2025-04-02T09:30:00Z",
-    postedOn: "2025-04-01T12:00:00Z",
-    seller: {
-      id: 101,
-      name: "JNN CARS",
-      avatar: "https://randomuser.me/api/portraits/men/23.jpg",
-      businessName: "JNN Motors Ltd",
-      phone: "+233501234567",
-      verified: true,
-      activeAdsCount: 24,
-      soldAdsCount: 86,
-    },
-    stats: {
-      views: 345000,
-      chats: 564,
-      calls: 678,
-      favorites: 15,
-      reports: 2,
-      orders: 12,
-      boostMultiplier: 10,
-    },
-    subscriptionPlan: "Business",
-    images: [
-      "https://picsum.photos/seed/hilux1/1200/800",
-      "https://picsum.photos/seed/hilux2/1200/800",
-      "https://picsum.photos/seed/hilux3/1200/800",
-      "https://picsum.photos/seed/hilux4/1200/800",
-      "https://picsum.photos/seed/hilux5/1200/800",
-      "https://picsum.photos/seed/hilux6/1200/800",
-      "https://picsum.photos/seed/hilux7/1200/800",
-    ],
-    attributes: [
-      { name: "Engine", value: "3.0L Diesel" },
-      { name: "Drive", value: "4WD" },
-      { name: "Transmission", value: "6-Speed Automatic" },
-      { name: "Color", value: "Pearl White" },
-    ],
-    parameters: [
-      { name: "Brand", slug: "brand", value: "Toyota" },
-      { name: "Year", slug: "year", value: "2025" },
-      { name: "Mileage", slug: "mileage", value: "0 km" },
-    ],
-    aggregatedReviews: {
-      averageRating: 4.7,
-      totalReviews: 243,
-      ratingBreakdown: { 5: 185, 4: 38, 3: 12, 2: 5, 1: 3 },
-    },
-    comments: [
-      {
-        id: 5001,
+// src/api/ads.js
+import { getToken } from "./auth";
+// import { formatNumber, timeAgo } from "../utils/numConverters"; // optional helpers
+
+const API_BASE_ROOT = import.meta.env.VITE_API_BASE || "";
+const API_BASE = `${API_BASE_ROOT}/admin/ads`;
+
+/** Helper: perform fetch and parse JSON (throws on non-ok) */
+async function fetchJson(path, opts = {}) {
+  const token = getToken();
+  const url = `${API_BASE}${path}`;
+  const headers = {
+    Accept: "application/json",
+    ...(opts.headers || {}),
+  };
+  if (!(opts.body instanceof FormData) && opts.body !== undefined) {
+    headers["Content-Type"] = "application/json";
+  }
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch(url, {
+    method: opts.method || "GET",
+    headers,
+    credentials: opts.credentials ?? "include",
+    body:
+      opts.body instanceof FormData
+        ? opts.body
+        : opts.body !== undefined
+        ? JSON.stringify(opts.body)
+        : undefined,
+  });
+
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    const err = new Error(`Request failed ${res.status}: ${txt}`);
+    err.status = res.status;
+    throw err;
+  }
+
+  return res.json().catch(() => ({}));
+}
+
+/** Safe helpers */
+const asNumber = (v) => {
+  if (v == null) return 0;
+  if (typeof v === "number") return v;
+  const n = Number(String(v).replace(/[, ]+/g, ""));
+  return Number.isFinite(n) ? n : 0;
+};
+const safe = (v, fallback = null) => (v === undefined ? fallback : v);
+
+/** Map backend Product -> UI ad shape (used by getAdsList) */
+function mapProductToUI(p) {
+  if (!p || typeof p !== "object") return null;
+
+  const id = safe(p.id, null);
+  const title = safe(p.name ?? p.title ?? p.productTitle ?? "", "");
+  const productCategory = {
+    category: safe(p.category?.name ?? p.productCategory?.category ?? null),
+    subcategory: safe(
+      p.category?.subCategory ?? p.productCategory?.subcategory ?? null
+    ),
+  };
+  const adPurpose = safe(p.adPurpose ?? p.type ?? "Sale");
+  const price = asNumber(p.price ?? p.listingPrice ?? p.amount ?? 0);
+  const currency = safe(p.currency ?? p.currencyCode ?? "GHS");
+
+  const location = {
+    city: safe(p.location?.city ?? p.city ?? p.user?.city ?? null),
+    area: safe(p.location?.area ?? p.area ?? null),
+    street: safe(p.location?.street ?? p.address ?? null),
+  };
+
+  const condition = safe(p.condition ?? p.itemCondition ?? "Unknown");
+  const status = String(
+    safe(p.moderationStatus ?? p.status ?? "active")
+  ).toLowerCase();
+  const suspensionReason = safe(
+    p.suspensionReason ?? p.suspendedReason ?? null
+  );
+  const approvedBy = safe(
+    p.approvedBy ?? p.approvedByUser ?? p.moderatedBy ?? null
+  );
+  const approvedOn = safe(
+    p.approvedAt ?? p.approvedOn ?? p.moderatedAt ?? null
+  );
+  const postedOn = safe(p.createdAt ?? p.postedOn ?? p.postedAt ?? null);
+
+  // seller/user
+  const sellerSource = p.user ?? p.seller ?? p.owner ?? {};
+  const seller = {
+    id: safe(sellerSource.id ?? sellerSource.userId ?? null),
+    name: safe(
+      sellerSource.name ??
+        sellerSource.username ??
+        sellerSource.businessName ??
+        "Unknown"
+    ),
+    avatar: safe(
+      sellerSource.profileImageUrl ??
+        sellerSource.avatar ??
+        sellerSource.avatarUrl ??
+        null
+    ),
+    businessName: safe(sellerSource.businessName ?? null),
+    phone: safe(sellerSource.phone ?? sellerSource.phoneNumber ?? null),
+    verified: !!(sellerSource.isVerified || sellerSource.verified),
+    activeAdsCount: asNumber(
+      sellerSource.activeAdsCount ?? sellerSource.activeCount ?? 0
+    ),
+    soldAdsCount: asNumber(
+      sellerSource.soldAdsCount ?? sellerSource.soldCount ?? 0
+    ),
+  };
+
+  // Stats (backend may expose different names)
+  const statsSource = p.stats ?? p.metrics ?? {};
+  const stats = {
+    views: asNumber(statsSource.views ?? p.viewsCount ?? p.viewCount ?? 0),
+    chats: asNumber(statsSource.chats ?? statsSource.messages ?? 0),
+    calls: asNumber(statsSource.calls ?? 0),
+    favorites: asNumber(statsSource.favorites ?? statsSource.likes ?? 0),
+    reports: asNumber(statsSource.reports ?? statsSource.flags ?? 0),
+    orders: asNumber(statsSource.orders ?? 0),
+    boostMultiplier: asNumber(statsSource.boostMultiplier ?? 0),
+  };
+
+  const subscriptionPlan = safe(p.subscriptionPlan ?? p.plan ?? null);
+
+  // images - try multiple field names
+  const images =
+    (Array.isArray(p.images) && p.images.map((x) => String(x))) ||
+    (Array.isArray(p.photos) && p.photos.map((x) => String(x))) ||
+    (Array.isArray(p.productImages) &&
+      p.productImages.map((img) => img?.url || String(img))) ||
+    (p.image ? [String(p.image)] : []) ||
+    [];
+
+  // attributes & parameters
+  const attributes =
+    (Array.isArray(p.attributes) &&
+      p.attributes.map((a) => ({
+        name: a.name ?? a.key ?? a.label,
+        value: a.value ?? a.val ?? "",
+      }))) ||
+    [];
+
+  const parameters =
+    (Array.isArray(p.parameters) &&
+      p.parameters.map((a) => ({
+        name: a.name ?? a.key ?? a.label,
+        slug: a.slug ?? a.key ?? "",
+        value: a.value ?? "",
+      }))) ||
+    [];
+
+  // reviews & comments
+  const aggregatedReviews = {
+    averageRating: asNumber(
+      p.aggregatedReviews?.averageRating ?? p.ratingAvg ?? p.avgRating ?? 0
+    ),
+    totalReviews: asNumber(
+      p.aggregatedReviews?.totalReviews ?? p.reviewsCount ?? 0
+    ),
+    ratingBreakdown:
+      p.aggregatedReviews?.ratingBreakdown ?? p.ratingBreakdown ?? {},
+  };
+
+  const comments =
+    (Array.isArray(p.comments) &&
+      p.comments.map((c) => ({
+        id: safe(c.id ?? c.commentId ?? null),
         user: {
-          id: 201,
-          name: "Kwame Mensah",
-          avatar: "https://randomuser.me/api/portraits/men/11.jpg",
+          id: safe(c.user?.id ?? c.userId ?? null),
+          name: safe(c.user?.name ?? c.authorName ?? "User"),
+          avatar: safe(c.user?.avatar ?? c.user?.profileImage ?? null),
         },
-        stars: 5,
-        text: "Great vehicle, saw it in person — pristine condition.Great vehicle, saw it in person — pristine condition.Great vehicle, saw it in person — pristine condition.",
-        date: "2025-04-05T08:10:00Z",
-        relatedAds: [2, 7],
-      },
-      {
-        id: 5002,
-        user: {
-          id: 202,
-          name: "Ama Serwaa",
-          avatar: "https://randomuser.me/api/portraits/women/19.jpg",
-        },
-        stars: 4,
-        text: "Good specs but price slightly high.",
-        date: "2025-04-06T10:20:00Z",
-        relatedAds: [],
-      },
-    ],
-    tags: ["pickup", "4x4", "diesel", "new"],
-  },
-  {
-    id: 2,
-    title: "Samsung S45 Ultra",
-    productCategory: { category: "Electronics", subcategory: "Mobile Phones" },
-    adPurpose: "Sale",
-    price: 9000,
-    currency: "GHS",
-    location: { city: "Accra", area: "Nungua", street: "Nungua Main St" },
-    condition: "Used",
-    status: "Pending",
-    suspensionReason: null,
-    approvedBy: "Jeff",
-    approvedOn: null,
-    postedOn: "2025-05-12T10:00:00Z",
-    seller: {
-      id: 102,
-      name: "Alexander Kowri",
-      avatar: "https://randomuser.me/api/portraits/men/24.jpg",
-      businessName: null,
-      phone: "+233542223344",
-      verified: false,
-      activeAdsCount: 3,
-      soldAdsCount: 11,
-    },
-    stats: {
-      views: 132000,
-      chats: 245,
-      calls: 112,
-      favorites: 10,
-      reports: 3,
-      orders: 4,
-      boostMultiplier: 5,
-    },
-    subscriptionPlan: "Premium",
-    images: [
-      "https://picsum.photos/seed/s45-1/1200/800",
-      "https://picsum.photos/seed/s45-2/1200/800",
-      "https://picsum.photos/seed/s45-3/1200/800",
-      "https://picsum.photos/seed/s45-4/1200/800",
-    ],
-    attributes: [
-      { name: "RAM", value: "56GB" },
-      { name: "Screen", value: "45IGP OLED" },
-      { name: "Network", value: "Locked to GV" },
-    ],
-    parameters: [
-      { name: "Brand", slug: "brand", value: "Samsung" },
-      { name: "Storage", slug: "storage", value: "512GB" },
-      { name: "Battery", slug: "battery", value: "5000mAh" },
-    ],
-    aggregatedReviews: {
-      averageRating: 4.5,
-      totalReviews: 234,
-      ratingBreakdown: { 5: 150, 4: 54, 3: 18, 2: 8, 1: 4 },
-    },
-    comments: [
-      {
-        id: 5003,
-        user: {
-          id: 203,
-          name: "Josephine A.",
-          avatar: "https://randomuser.me/api/portraits/women/21.jpg",
-        },
-        stars: 5,
-        text: "Phone as described, seller responsive.",
-        date: "2025-05-13T11:00:00Z",
-        relatedAds: [],
-      },
-      {
-        id: 5004,
-        user: {
-          id: 204,
-          name: "Emmanuel K",
-          avatar: "https://randomuser.me/api/portraits/men/25.jpg",
-        },
-        stars: 3,
-        text: "Good device but had minor scratches.",
-        date: "2025-05-14T15:00:00Z",
-        relatedAds: [9],
-      },
-    ],
-    tags: ["smartphone", "5g", "used"],
-  },
-  {
-    id: 3,
-    title: "Apple MacBook Air M3 - 16GB / 512GB",
-    productCategory: { category: "Electronics", subcategory: "Laptops" },
-    adPurpose: "Sale",
-    price: 16500,
-    currency: "GHS",
-    location: { city: "Kumasi", area: "Adum", street: "Adum Market Rd" },
-    condition: "Brand New",
-    status: "Active",
-    suspensionReason: null,
-    approvedBy: "Sandra Biom",
-    approvedOn: "2025-06-11T08:45:00Z",
-    postedOn: "2025-06-10T09:00:00Z",
-    seller: {
-      id: 103,
-      name: "TechWorld GH",
-      avatar: "https://randomuser.me/api/portraits/men/29.jpg",
-      businessName: "TechWorld",
-      phone: "+233550987654",
-      verified: true,
-      activeAdsCount: 12,
-      soldAdsCount: 47,
-    },
-    stats: {
-      views: 72000,
-      chats: 98,
-      calls: 53,
-      favorites: 25,
-      reports: 1,
-      orders: 9,
-      boostMultiplier: 8,
-    },
-    subscriptionPlan: "Business",
-    images: [
-      "https://picsum.photos/seed/mac1/1200/800",
-      "https://picsum.photos/seed/mac2/1200/800",
-      "https://picsum.photos/seed/mac3/1200/800",
-      "https://picsum.photos/seed/mac4/1200/800",
-      "https://picsum.photos/seed/mac5/1200/800",
-      "https://picsum.photos/seed/mac6/1200/800",
-      "https://picsum.photos/seed/mac7/1200/800",
-      "https://picsum.photos/seed/mac8/1200/800",
-      "https://picsum.photos/seed/mac9/1200/800",
-    ],
-    attributes: [
-      { name: "RAM", value: "16GB" },
-      { name: "Storage", value: "512GB SSD" },
-      { name: "Chip", value: "Apple M3" },
-    ],
-    parameters: [
-      { name: "Brand", slug: "brand", value: "Apple" },
-      { name: "CPU", slug: "cpu", value: "M3" },
-      { name: "Screen", slug: "screen", value: "13.6 inch" },
-    ],
-    aggregatedReviews: {
-      averageRating: 4.8,
-      totalReviews: 121,
-      ratingBreakdown: { 5: 98, 4: 15, 3: 6, 2: 1, 1: 1 },
-    },
-    comments: [
-      {
-        id: 5005,
-        user: {
-          id: 205,
-          name: "Sandra Biom",
-          avatar: "https://randomuser.me/api/portraits/women/6.jpg",
-        },
-        stars: 5,
-        text: "Excellent laptop, fast and lightweight.",
-        date: "2025-06-12T12:30:00Z",
-        relatedAds: [],
-      },
-    ],
-    tags: ["macbook", "apple", "m3"],
-  },
-  {
-    id: 4,
-    title: "3-Bedroom Furnished Apartment - East Legon",
-    productCategory: { category: "Real Estate", subcategory: "Apartments" },
-    adPurpose: "Rent",
-    price: 4200,
-    currency: "GHS",
-    location: { city: "Accra", area: "East Legon", street: "East Legon Hills" },
-    condition: "Furnished",
-    status: "Active",
-    suspensionReason: null,
-    approvedBy: "Jeff",
-    approvedOn: "2025-05-06T09:00:00Z",
-    postedOn: "2025-05-05T14:00:00Z",
-    seller: {
-      id: 104,
-      name: "Nii Realty",
-      avatar: "https://randomuser.me/api/portraits/men/30.jpg",
-      businessName: "Nii Realty Co.",
-      phone: "+233244556677",
-      verified: true,
-      activeAdsCount: 8,
-      soldAdsCount: 21,
-    },
-    stats: {
-      views: 256000,
-      chats: 512,
-      calls: 321,
-      favorites: 32,
-      reports: 0,
-      orders: 6,
-      boostMultiplier: 6,
-    },
-    subscriptionPlan: "Premium",
-    images: [
-      "https://picsum.photos/seed/apt1/1200/800",
-      "https://picsum.photos/seed/apt2/1200/800",
-      "https://picsum.photos/seed/apt3/1200/800",
-      "https://picsum.photos/seed/apt4/1200/800",
-      "https://picsum.photos/seed/apt5/1200/800",
-      "https://picsum.photos/seed/apt6/1200/800",
-    ],
-    attributes: [
-      { name: "Bedrooms", value: "3" },
-      { name: "Bathrooms", value: "2" },
-      { name: "Parking", value: "Secure compound" },
-      { name: "Furnishing", value: "Fully Furnished" },
-    ],
-    parameters: [
-      { name: "Furnishing", slug: "furnishing", value: "Furnished" },
-      { name: "LeaseTerm", slug: "lease_term", value: "12 months" },
-      { name: "PetsAllowed", slug: "pets_allowed", value: "No" },
-    ],
-    aggregatedReviews: {
-      averageRating: 4.6,
-      totalReviews: 98,
-      ratingBreakdown: { 5: 62, 4: 24, 3: 8, 2: 3, 1: 1 },
-    },
-    comments: [
-      {
-        id: 5006,
-        user: {
-          id: 206,
-          name: "Linda A.",
-          avatar: "https://randomuser.me/api/portraits/women/31.jpg",
-        },
-        stars: 5,
-        text: "Spacious and well-secured building.",
-        date: "2025-05-07T09:00:00Z",
-        relatedAds: [],
-      },
-    ],
-    tags: ["rental", "east-legon", "furnished"],
-  },
-  {
-    id: 5,
-    title: "Canon EOS R10 Mirrorless Camera",
-    productCategory: { category: "Electronics", subcategory: "Cameras" },
-    adPurpose: "Pay Later",
-    price: 8200,
-    currency: "GHS",
+        stars: asNumber(c.stars ?? c.rating ?? 0),
+        text: safe(c.text ?? c.body ?? c.commentText ?? ""),
+        date: safe(c.date ?? c.createdAt ?? c.postedAt ?? null),
+        relatedAds: Array.isArray(c.relatedAds)
+          ? c.relatedAds
+          : c.relatedAdIds ?? [],
+      }))) ||
+    [];
+
+  const tags = Array.isArray(p.tags) ? p.tags : p.keywords ?? p.labels ?? [];
+
+  return {
+    id,
+    title,
+    productCategory,
+    adPurpose,
+    price,
+    currency,
+    location,
+    condition,
+    status,
+    suspensionReason,
+    approvedBy,
+    approvedOn,
+    postedOn,
+    seller,
+    stats,
+    subscriptionPlan,
+    images,
+    attributes,
+    parameters,
+    aggregatedReviews,
+    comments,
+    tags,
+    _raw: p,
+  };
+}
+
+/** PUBLIC: fetch list of ads (supports query string or object) */
+export async function getAdsList(query = "") {
+  try {
+    // allow object -> querystring or string
+    const qs =
+      typeof query === "string"
+        ? query
+        : Object.entries(query || {})
+            .map(
+              ([k, v]) =>
+                `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`
+            )
+            .join("&");
+    const path = qs ? `?${qs}` : "";
+    const res = await fetchJson(path, { method: "GET" });
+    // expected: { success: true, data: { ads: [...], pagination: {...}, filters: {...} } }
+    const rawAds = res?.data?.ads ?? res?.ads ?? res?.data ?? [];
+    // rawAds may already be an object { items, pagination, filters, ... } if backend changed
+    let arr;
+    if (Array.isArray(rawAds)) {
+      arr = rawAds;
+    } else if (Array.isArray(res?.data?.items)) {
+      arr = res.data.items;
+    } else if (Array.isArray(res?.items)) {
+      arr = res.items;
+    } else {
+      arr = [];
+    }
+
+    const mapped = arr.map(mapProductToUI).filter(Boolean);
+
+    // preserve pagination & filters if present
+    const pagination = res?.data?.pagination ?? res?.pagination ?? null;
+    const filters = res?.data?.filters ?? res?.filters ?? null;
+
+    return { items: mapped, pagination, filters, raw: res };
+  } catch (err) {
+    console.error("getAdsList error:", err);
+    return { items: [], pagination: null, filters: null, raw: null };
+  }
+}
+
+/** PUBLIC: fetch single ad by id */
+export async function getAdById(id) {
+  try {
+    if (!id) return null;
+    const res = await fetchJson(`/${encodeURIComponent(String(id))}`, {
+      method: "GET",
+    });
+    const raw = res?.data?.ad ?? res?.data ?? res?.ad ?? res;
+    return mapProductToUI(raw);
+  } catch (err) {
+    console.error("getAdById error:", err);
+    return null;
+  }
+}
+
+/** PUBLIC: fetch ads stats (GET /stats) */
+export async function getAdsStats() {
+  try {
+    const res = await fetchJson("/stats", { method: "GET" });
+    const d = res?.data ?? {};
+    return {
+      total: asNumber(d.total),
+      active: asNumber(d.active),
+      pending: asNumber(d.pending),
+      suspended: asNumber(d.suspended),
+      rejected: asNumber(d.rejected),
+      todayPosted: asNumber(d.todayPosted),
+      weekPosted: asNumber(d.weekPosted),
+      monthPosted: asNumber(d.monthPosted),
+      byCategory: d.byCategory ?? {},
+      topSellers: Array.isArray(d.topSellers) ? d.topSellers : [],
+      moderation: d.moderation ?? {},
+      raw: res,
+    };
+  } catch (err) {
+    console.error("getAdsStats error:", err);
+    return {
+      total: 0,
+      active: 0,
+      pending: 0,
+      suspended: 0,
+      rejected: 0,
+      byCategory: {},
+      topSellers: [],
+      moderation: {},
+      raw: null,
+    };
+  }
+}
+
+/** PUBLIC: update a single ad status (PUT /:id/status) */
+export async function updateAdStatus(
+  id,
+  { status, reason = null, notes = null } = {}
+) {
+  try {
+    if (!id) throw new Error("id required");
+    const res = await fetchJson(`/${encodeURIComponent(String(id))}/status`, {
+      method: "PUT",
+      body: { status, reason, notes },
+    });
+    return res;
+  } catch (err) {
+    console.error("updateAdStatus error:", err);
+    throw err;
+  }
+}
+
+/** PUBLIC: bulk update ads status (POST /bulk/status) */
+export async function bulkUpdateAds({
+  adIds = [],
+  status,
+  reason = null,
+  notes = null,
+} = {}) {
+  try {
+    const res = await fetchJson(`/bulk/status`, {
+      method: "POST",
+      body: { adIds, status, reason, notes },
+    });
+    return res;
+  } catch (err) {
+    console.error("bulkUpdateAds error:", err);
+    throw err;
+  }
+}
+
+/** PUBLIC: delete ad image (DELETE /:id/images/:imageId) */
+export async function deleteAdImage(adId, imageId, { reason = null } = {}) {
+  try {
+    const path = `/${encodeURIComponent(
+      String(adId)
+    )}/images/${encodeURIComponent(String(imageId))}`;
+    const useBody = true;
+    if (useBody) {
+      return fetchJson(path, { method: "DELETE", body: { reason } });
+    } else {
+      const q = reason ? `?reason=${encodeURIComponent(String(reason))}` : "";
+      return fetchJson(`${path}${q}`, { method: "DELETE" });
+    }
+  } catch (err) {
+    console.error("deleteAdImage error:", err);
+    throw err;
+  }
+}
+
+/* ----------------- robust mapping utilities (accept raw backend or mapped object) ----------------- */
+
+/** Map single ad in backend shape -> UI shape (used when you need to map raw responses) */
+export function mapSingleAdToUI(ad) {
+  if (!ad) return null;
+
+  // safe helpers
+  const _parseNumber = (v) => {
+    if (v === undefined || v === null || v === "") return null;
+    if (typeof v === "number") return Number.isFinite(v) ? v : null;
+    const n = Number(String(v).trim().replace(/[, ]+/g, ""));
+    return Number.isFinite(n) ? n : null;
+  };
+  const asNumber = (v) => _parseNumber(v) ?? 0;
+  const safe = (v, fallback = null) => (v === undefined ? fallback : v);
+
+  // category/subcategory
+  const categoryName =
+    ad.category?.name ?? ad.productCategory?.category ?? null;
+  const subcategoryName =
+    ad.subcategory?.name ??
+    ad.subcategoryName ??
+    ad.productCategory?.subcategory ??
+    null;
+
+  // images - prefer arrays, then productImages objects, then single image field
+  let images = [];
+  if (Array.isArray(ad.images) && ad.images.length) {
+    images = ad.images.filter(Boolean).map(String);
+  } else if (Array.isArray(ad.productImages) && ad.productImages.length) {
+    images = ad.productImages
+      .map((pi) => pi?.url ?? pi?.path ?? pi?.fileUrl ?? null)
+      .filter(Boolean)
+      .map(String);
+  } else if (ad.image) {
+    images = [String(ad.image)];
+  } else if (ad.imageUrl) {
+    images = [String(ad.imageUrl)];
+  }
+
+  // seller mapping (from `user` object)
+  const sellerSource = ad.user ?? ad.seller ?? ad.owner ?? {};
+  const seller = {
+    id: sellerSource.id ?? sellerSource.userId ?? null,
+    name:
+      sellerSource.name ??
+      sellerSource.username ??
+      sellerSource.businessName ??
+      "Unknown",
+    avatar:
+      sellerSource.avatarUrl ??
+      sellerSource.avatar ??
+      sellerSource.profileImage ??
+      null,
+    businessName: sellerSource.businessName ?? null,
+    phone: sellerSource.phone ?? sellerSource.phoneNumber ?? null,
+    verified:
+      !!(
+        sellerSource.emailVerified ||
+        sellerSource.phoneVerified ||
+        sellerSource.isVerified
+      ) || false,
+    activeAdsCount: asNumber(
+      sellerSource.activeAdsCount ?? sellerSource.activeCount ?? 0
+    ),
+    soldAdsCount: asNumber(
+      sellerSource.soldAdsCount ?? sellerSource.soldCount ?? 0
+    ),
+  };
+
+  // STATS: be robust - try multiple possible field names
+  const statsSource = ad.stats ?? ad.metrics ?? {};
+  const pickFirst = (list) => {
+    for (const x of list) {
+      if (x !== undefined && x !== null && x !== "") return x;
+    }
+    return null;
+  };
+
+  const rawViews = pickFirst([
+    statsSource.views,
+    ad.viewsCount,
+    ad.viewCount,
+    ad.views,
+  ]);
+  const rawFavorites = pickFirst([
+    statsSource.favorites,
+    statsSource.likes,
+    ad.favoritesCount,
+    ad.favorites,
+    ad.likesCount,
+    ad.likes,
+  ]);
+  const rawChats = pickFirst([
+    statsSource.chats,
+    statsSource.messages,
+    ad.chatsCount,
+    ad.messagesCount,
+  ]);
+  const rawCalls = pickFirst([statsSource.calls, ad.callsCount, ad.callCount]);
+  const rawReports = pickFirst([
+    statsSource.reports,
+    ad.reportsCount,
+    ad.flags,
+    ad.reports,
+  ]);
+  const rawOrders = pickFirst([statsSource.orders, ad.ordersCount, ad.orders]);
+
+  const views = asNumber(rawViews);
+  const favorites = asNumber(rawFavorites);
+  const chats = asNumber(rawChats);
+  const calls = asNumber(rawCalls);
+  const reports = asNumber(rawReports);
+  const orders = asNumber(rawOrders);
+
+  // debug: warn if favorites is zero and no raw path contained a value
+  if (favorites === 0 && rawFavorites == null) {
+    // only warn while developing
+    console.warn(
+      `mapSingleAdToUI: favorites missing for ad ${
+        ad.id ?? ad.pid ?? ad.name
+      }. ` +
+        `Checked paths: stats.favorites | stats.likes | favoritesCount | favorites | likesCount | likes. ` +
+        `Raw ad snapshot (trimmed):`,
+      { id: ad.id ?? ad.pid, name: ad.name ?? ad.title }
+    );
+  }
+
+  const stats = {
+    views,
+    chats,
+    calls,
+    favorites,
+    reports,
+    orders,
+    boostMultiplier: ad.isPromoted ? asNumber(ad.boostMultiplier ?? 1) : 0,
+  };
+
+  // attributes / parameters / comments / tags
+  const attributes =
+    Array.isArray(ad.attributes) && ad.attributes.length
+      ? ad.attributes.map((a) => ({
+          name: a.name ?? a.key ?? a.label ?? "",
+          value: a.value ?? a.val ?? "",
+        }))
+      : [];
+
+  const parameters =
+    Array.isArray(ad.parameters) && ad.parameters.length
+      ? ad.parameters.map((p) => ({
+          name: p.name ?? p.key ?? p.label ?? "",
+          slug: p.slug ?? p.key ?? "",
+          value: p.value ?? p.val ?? "",
+        }))
+      : [];
+
+  const aggregatedReviews = {
+    averageRating: asNumber(
+      ad.aggregatedReviews?.averageRating ??
+        ad.ratingAvg ??
+        ad.avgRating ??
+        ad.avg_rating ??
+        0
+    ),
+    totalReviews: asNumber(
+      ad.aggregatedReviews?.totalReviews ?? ad.reviewsCount ?? 0
+    ),
+    ratingBreakdown:
+      ad.aggregatedReviews?.ratingBreakdown ?? ad.ratingBreakdown ?? {},
+  };
+
+  const comments =
+    Array.isArray(ad.comments) && ad.comments.length
+      ? ad.comments.map((c) => ({
+          id: c.id ?? c.commentId ?? null,
+          user: {
+            id: c.user?.id ?? c.userId ?? null,
+            name: c.user?.name ?? c.authorName ?? "User",
+            avatar: c.user?.avatar ?? c.user?.profileImage ?? null,
+          },
+          stars: asNumber(c.stars ?? c.rating ?? 0),
+          text: c.text ?? c.body ?? c.commentText ?? "",
+          date: c.date ?? c.createdAt ?? c.postedAt ?? null,
+          relatedAds: Array.isArray(c.relatedAds)
+            ? c.relatedAds
+            : c.relatedAdIds ?? [],
+        }))
+      : [];
+
+  const tags = Array.isArray(ad.tags)
+    ? ad.tags
+    : ad.keywords ?? ad.labels ?? [];
+
+  return {
+    id: ad.id ?? ad.pid ?? null,
+    title: ad.name ?? ad.title ?? "",
+    productCategory: { category: categoryName, subcategory: subcategoryName },
+    adPurpose: ad.adPurpose ?? ad.type ?? "Sale",
+    price: asNumber(ad.price ?? ad.listingPrice ?? 0),
+    currency: ad.currency ?? ad.currencyCode ?? "GHS",
     location: {
-      city: "Tema",
-      area: "Community 4",
-      street: "Tema Industrial Rd",
+      city: ad.location?.city ?? ad.city ?? ad.user?.city ?? null,
+      area: ad.location?.area ?? ad.area ?? null,
+      street: ad.location?.street ?? ad.street ?? ad.address ?? null,
     },
-    condition: "Like New",
-    status: "Active",
-    suspensionReason: null,
-    approvedBy: "Sandra Biom",
-    approvedOn: "2025-03-23T10:00:00Z",
-    postedOn: "2025-03-22T16:00:00Z",
-    seller: {
-      id: 105,
-      name: "PhotoZone GH",
-      avatar: "https://randomuser.me/api/portraits/men/40.jpg",
-      businessName: "PhotoZone",
-      phone: "+233263334455",
-      verified: true,
-      activeAdsCount: 5,
-      soldAdsCount: 18,
-    },
-    stats: {
-      views: 52000,
-      chats: 78,
-      calls: 30,
-      favorites: 11,
-      reports: 0,
-      orders: 3,
-      boostMultiplier: 3,
-    },
-    subscriptionPlan: "Basic",
-    images: [
-      "https://picsum.photos/seed/cam1/1200/800",
-      "https://picsum.photos/seed/cam2/1200/800",
-      "https://picsum.photos/seed/cam3/1200/800",
-    ],
-    attributes: [
-      { name: "Megapixels", value: "24.2MP" },
-      { name: "Video", value: "4K" },
-      { name: "Connectivity", value: "WiFi" },
-    ],
-    parameters: [
-      { name: "Brand", slug: "brand", value: "Canon" },
-      { name: "Model", slug: "model", value: "EOS R10" },
-    ],
-    aggregatedReviews: {
-      averageRating: 4.4,
-      totalReviews: 67,
-      ratingBreakdown: { 5: 40, 4: 15, 3: 8, 2: 3, 1: 1 },
-    },
-    comments: [
-      {
-        id: 5007,
-        user: {
-          id: 207,
-          name: "Kofi A.",
-          avatar: "https://randomuser.me/api/portraits/men/41.jpg",
-        },
-        stars: 4,
-        text: "Good buy for content creators.",
-        date: "2025-03-24T07:30:00Z",
-        relatedAds: [],
-      },
-    ],
-    tags: ["camera", "mirrorless", "4k"],
-  },
-  {
-    id: 6,
-    title: "HP Pavilion Gaming - RTX 3060 / 16GB RAM",
-    productCategory: { category: "Electronics", subcategory: "Computers" },
-    adPurpose: "Sale",
-    price: 12800,
-    currency: "GHS",
-    location: { city: "Accra", area: "Madina", street: "Madina Tech Park" },
-    condition: "New",
-    status: "Active",
-    suspensionReason: null,
-    approvedBy: "Jeff",
-    approvedOn: "2025-04-04T11:15:00Z",
-    postedOn: "2025-04-03T11:00:00Z",
-    seller: {
-      id: 106,
-      name: "GlobalTech",
-      avatar: "https://randomuser.me/api/portraits/men/42.jpg",
-      businessName: "GlobalTech Ltd",
-      phone: "+233244778899",
-      verified: true,
-      activeAdsCount: 14,
-      soldAdsCount: 40,
-    },
-    stats: {
-      views: 103000,
-      chats: 210,
-      calls: 89,
-      favorites: 19,
-      reports: 1,
-      orders: 11,
-      boostMultiplier: 7,
-    },
-    subscriptionPlan: "Business",
-    images: [
-      "https://picsum.photos/seed/gaming1/1200/800",
-      "https://picsum.photos/seed/gaming2/1200/800",
-      "https://picsum.photos/seed/gaming3/1200/800",
-      "https://picsum.photos/seed/gaming4/1200/800",
-      "https://picsum.photos/seed/gaming5/1200/800",
-    ],
-    attributes: [
-      { name: "GPU", value: "NVIDIA RTX 3060" },
-      { name: "RAM", value: "16GB" },
-      { name: "Storage", value: "1TB SSD" },
-    ],
-    parameters: [
-      { name: "Brand", slug: "brand", value: "HP" },
-      { name: "CPU", slug: "cpu", value: "Intel i7" },
-    ],
-    aggregatedReviews: {
-      averageRating: 4.7,
-      totalReviews: 189,
-      ratingBreakdown: { 5: 145, 4: 30, 3: 8, 2: 4, 1: 2 },
-    },
-    comments: [
-      {
-        id: 5008,
-        user: {
-          id: 208,
-          name: "Prince D.",
-          avatar: "https://randomuser.me/api/portraits/men/43.jpg",
-        },
-        stars: 5,
-        text: "Runs most games on high settings smoothly.",
-        date: "2025-04-05T13:45:00Z",
-        relatedAds: [],
-      },
-    ],
-    tags: ["gaming", "laptop", "rtx"],
-  },
-  {
-    id: 7,
-    title: "iPhone 15 Pro Max - 256GB",
-    productCategory: { category: "Electronics", subcategory: "Phones" },
-    adPurpose: "Sale",
-    price: 18000,
-    currency: "GHS",
-    location: { city: "Accra", area: "Osu", street: "Oxford Street" },
-    condition: "Brand New",
-    status: "Active",
-    suspensionReason: null,
-    approvedBy: "Jeff",
-    approvedOn: "2025-03-01T10:15:00Z",
-    postedOn: "2025-02-28T10:00:00Z",
-    seller: {
-      id: 107,
-      name: "SmartHub GH",
-      avatar: "https://randomuser.me/api/portraits/men/44.jpg",
-      businessName: "SmartHub",
-      phone: "+233207112233",
-      verified: true,
-      activeAdsCount: 30,
-      soldAdsCount: 150,
-    },
-    stats: {
-      views: 521000,
-      chats: 932,
-      calls: 408,
-      favorites: 84,
-      reports: 4,
-      orders: 45,
-      boostMultiplier: 12,
-    },
-    subscriptionPlan: "Business",
-    images: [
-      "https://picsum.photos/seed/iphone15-1/1200/800",
-      "https://picsum.photos/seed/iphone15-2/1200/800",
-      "https://picsum.photos/seed/iphone15-3/1200/800",
-      "https://picsum.photos/seed/iphone15-4/1200/800",
-      "https://picsum.photos/seed/iphone15-5/1200/800",
-      "https://picsum.photos/seed/iphone15-6/1200/800",
-      "https://picsum.photos/seed/iphone15-7/1200/800",
-      "https://picsum.photos/seed/iphone15-8/1200/800",
-      "https://picsum.photos/seed/iphone15-9/1200/800",
-    ],
-    attributes: [
-      { name: "Storage", value: "256GB" },
-      { name: "Chip", value: "A17 Pro" },
-      { name: "Build", value: "Titanium" },
-    ],
-    parameters: [
-      { name: "Brand", slug: "brand", value: "Apple" },
-      { name: "Color", slug: "color", value: "Space Black" },
-    ],
-    aggregatedReviews: {
-      averageRating: 4.9,
-      totalReviews: 312,
-      ratingBreakdown: { 5: 270, 4: 30, 3: 8, 2: 3, 1: 1 },
-    },
-    comments: [
-      {
-        id: 5009,
-        user: {
-          id: 209,
-          name: "Kwaku B.",
-          avatar: "https://randomuser.me/api/portraits/men/45.jpg",
-        },
-        stars: 5,
-        text: "Best camera and performance — highly recommended.",
-        date: "2025-03-02T08:00:00Z",
-        relatedAds: [],
-      },
-    ],
-    tags: ["iphone", "apple", "flagship"],
-  },
-  {
-    id: 8,
-    title: 'LG 65" OLED 4K Smart TV',
-    productCategory: { category: "Electronics", subcategory: "Televisions" },
-    adPurpose: "Sale",
-    price: 10500,
-    currency: "GHS",
-    location: { city: "Kumasi", area: "Asafo", street: "Asafo Main Rd" },
-    condition: "Brand New",
-    status: "Active",
-    suspensionReason: null,
-    approvedBy: "Sandra Biom",
-    approvedOn: "2025-03-16T14:30:00Z",
-    postedOn: "2025-03-15T13:00:00Z",
-    seller: {
-      id: 108,
-      name: "ElectroMart",
-      avatar: "https://randomuser.me/api/portraits/men/46.jpg",
-      businessName: "ElectroMart Kumasi",
-      phone: "+233322334455",
-      verified: true,
-      activeAdsCount: 9,
-      soldAdsCount: 36,
-    },
-    stats: {
-      views: 83000,
-      chats: 120,
-      calls: 45,
-      favorites: 22,
-      reports: 0,
-      orders: 7,
-      boostMultiplier: 4,
-    },
-    subscriptionPlan: "Premium",
-    images: [
-      "https://picsum.photos/seed/tv1/1200/800",
-      "https://picsum.photos/seed/tv2/1200/800",
-      "https://picsum.photos/seed/tv3/1200/800",
-      "https://picsum.photos/seed/tv4/1200/800",
-    ],
-    attributes: [
-      { name: "Size", value: "65 inch" },
-      { name: "Resolution", value: "4K UHD" },
-      { name: "Features", value: "Dolby Vision, Smart TV" },
-    ],
-    parameters: [{ name: "Brand", slug: "brand", value: "LG" }],
-    aggregatedReviews: {
-      averageRating: 4.6,
-      totalReviews: 145,
-      ratingBreakdown: { 5: 95, 4: 30, 3: 12, 2: 6, 1: 2 },
-    },
-    comments: [
-      {
-        id: 5010,
-        user: {
-          id: 210,
-          name: "Esi T.",
-          avatar: "https://randomuser.me/api/portraits/women/47.jpg",
-        },
-        stars: 5,
-        text: "Picture quality is stunning.",
-        date: "2025-03-17T09:10:00Z",
-        relatedAds: [],
-      },
-    ],
-    tags: ["oled", "4k", "smart-tv"],
-  },
-  {
-    id: 9,
-    title: "Nike Air Max 270 (Size 42)",
-    productCategory: { category: "Fashion", subcategory: "Footwear" },
-    adPurpose: "Sale",
-    price: 900,
-    currency: "GHS",
-    location: { city: "Accra", area: "Accra Mall", street: "Accra Mall Walk" },
-    condition: "New",
-    status: "Active",
-    suspensionReason: null,
-    approvedBy: "Jeff",
-    approvedOn: "2025-07-11T10:00:00Z",
-    postedOn: "2025-07-10T12:00:00Z",
-    seller: {
-      id: 109,
-      name: "WearIt GH",
-      avatar: "https://randomuser.me/api/portraits/women/50.jpg",
-      businessName: "WearIt",
-      phone: "+233245667788",
-      verified: true,
-      activeAdsCount: 7,
-      soldAdsCount: 60,
-    },
-    stats: {
-      views: 26000,
-      chats: 44,
-      calls: 10,
-      favorites: 8,
-      reports: 0,
-      orders: 5,
-      boostMultiplier: 2,
-    },
-    subscriptionPlan: "Basic",
-    images: [
-      "https://picsum.photos/seed/shoe1/1200/800",
-      "https://picsum.photos/seed/shoe2/1200/800",
-      "https://picsum.photos/seed/shoe3/1200/800",
-      "https://picsum.photos/seed/shoe4/1200/800",
-      "https://picsum.photos/seed/shoe5/1200/800",
-      "https://picsum.photos/seed/shoe6/1200/800",
-    ],
-    attributes: [
-      { name: "Size", value: "42" },
-      { name: "Color", value: "White/Black" },
-      { name: "Material", value: "Mesh" },
-    ],
-    parameters: [{ name: "Brand", slug: "brand", value: "Nike" }],
-    aggregatedReviews: {
-      averageRating: 4.3,
-      totalReviews: 77,
-      ratingBreakdown: { 5: 40, 4: 20, 3: 10, 2: 4, 1: 3 },
-    },
-    comments: [
-      {
-        id: 5011,
-        user: {
-          id: 211,
-          name: "Ebo P.",
-          avatar: "https://randomuser.me/api/portraits/men/51.jpg",
-        },
-        stars: 4,
-        text: "Comfortable and true to size.",
-        date: "2025-07-12T14:00:00Z",
-        relatedAds: [],
-      },
-    ],
-    tags: ["sneakers", "nike", "footwear"],
-  },
-  {
-    id: 10,
-    title: "Professional Hair Dryer Set - 2000W",
-    productCategory: { category: "Beauty", subcategory: "Accessories" },
-    adPurpose: "Sale",
-    price: 320,
-    currency: "GHS",
-    location: { city: "Takoradi", area: "Central", street: "Beach Rd" },
-    condition: "New",
-    status: "Active",
-    suspensionReason: null,
-    approvedBy: "Sandra Biom",
-    approvedOn: "2025-04-20T09:00:00Z",
-    postedOn: "2025-04-19T09:00:00Z",
-    seller: {
-      id: 110,
-      name: "GlamHub",
-      avatar: "https://randomuser.me/api/portraits/women/52.jpg",
-      businessName: "GlamHub",
-      phone: "+233204556699",
-      verified: false,
-      activeAdsCount: 4,
-      soldAdsCount: 12,
-    },
-    stats: {
-      views: 18000,
-      chats: 26,
-      calls: 9,
-      favorites: 5,
-      reports: 0,
-      orders: 2,
-      boostMultiplier: 1,
-    },
-    subscriptionPlan: "Basic",
-    images: [
-      "https://picsum.photos/seed/dryer1/1200/800",
-      "https://picsum.photos/seed/dryer2/1200/800",
-      "https://picsum.photos/seed/dryer3/1200/800",
-    ],
-    attributes: [
-      { name: "Power", value: "2000W" },
-      { name: "HeatSettings", value: "3" },
-      { name: "Weight", value: "0.9kg" },
-    ],
-    parameters: [{ name: "Brand", slug: "brand", value: "GlamPro" }],
-    aggregatedReviews: {
-      averageRating: 4.2,
-      totalReviews: 54,
-      ratingBreakdown: { 5: 28, 4: 14, 3: 6, 2: 4, 1: 2 },
-    },
-    comments: [
-      {
-        id: 5012,
-        user: {
-          id: 212,
-          name: "Sandra K.",
-          avatar: "https://randomuser.me/api/portraits/women/53.jpg",
-        },
-        stars: 4,
-        text: "Nice compact set for travel.",
-        date: "2025-04-21T10:00:00Z",
-        relatedAds: [],
-      },
-    ],
-    tags: ["hair", "beauty", "dryer"],
-  },
-  {
-    id: 11,
-    title: "Sofa 3-Seater - Modern Leather",
-    productCategory: { category: "Home & Living", subcategory: "Furniture" },
-    adPurpose: "Sale",
-    price: 2400,
-    currency: "GHS",
-    location: {
-      city: "Accra",
-      area: "Airport Residential",
-      street: "Airport Rd",
-    },
-    condition: "New",
-    status: "Active",
-    suspensionReason: null,
-    approvedBy: "Jeff",
-    approvedOn: "2025-06-01T10:00:00Z",
-    postedOn: "2025-05-30T08:00:00Z",
-    seller: {
-      id: 111,
-      name: "HomeComfort GH",
-      avatar: "https://randomuser.me/api/portraits/men/54.jpg",
-      businessName: "HomeComfort",
-      phone: "+233277889900",
-      verified: true,
-      activeAdsCount: 10,
-      soldAdsCount: 52,
-    },
-    stats: {
-      views: 46000,
-      chats: 66,
-      calls: 20,
-      favorites: 12,
-      reports: 0,
-      orders: 5,
-      boostMultiplier: 3,
-    },
-    subscriptionPlan: "Premium",
-    images: [
-      "https://picsum.photos/seed/sofa1/1200/800",
-      "https://picsum.photos/seed/sofa2/1200/800",
-      "https://picsum.photos/seed/sofa3/1200/800",
-      "https://picsum.photos/seed/sofa4/1200/800",
-      "https://picsum.photos/seed/sofa5/1200/800",
-      "https://picsum.photos/seed/sofa6/1200/800",
-      "https://picsum.photos/seed/sofa7/1200/800",
-      "https://picsum.photos/seed/sofa8/1200/800",
-      "https://picsum.photos/seed/sofa9/1200/800",
-    ],
-    attributes: [
-      { name: "Material", value: "Genuine Leather" },
-      { name: "Seats", value: "3" },
-      { name: "Color", value: "Dark Brown" },
-    ],
-    parameters: [
-      { name: "Brand", slug: "brand", value: "HomeComfort" },
-      { name: "Warranty", slug: "warranty", value: "2 years" },
-    ],
-    aggregatedReviews: {
-      averageRating: 4.5,
-      totalReviews: 88,
-      ratingBreakdown: { 5: 60, 4: 18, 3: 6, 2: 3, 1: 1 },
-    },
-    comments: [
-      {
-        id: 5013,
-        user: {
-          id: 213,
-          name: "Efua M.",
-          avatar: "https://randomuser.me/api/portraits/women/55.jpg",
-        },
-        stars: 5,
-        text: "Stylish and comfortable sofa.",
-        date: "2025-06-02T11:00:00Z",
-        relatedAds: [],
-      },
-    ],
-    tags: ["sofa", "leather", "furniture"],
-  },
-  {
-    id: 12,
-    title: "Samsung Refrigerator - 300L",
-    productCategory: { category: "Home Appliances", subcategory: "Kitchen" },
-    adPurpose: "Sale",
-    price: 3800,
-    currency: "GHS",
-    location: {
-      city: "Kumasi",
-      area: "City Centre",
-      street: "Kumasi Market Rd",
-    },
-    condition: "New",
-    status: "Active",
-    suspensionReason: null,
-    approvedBy: "Sandra Biom",
-    approvedOn: "2025-02-10T09:00:00Z",
-    postedOn: "2025-02-09T07:00:00Z",
-    seller: {
-      id: 112,
-      name: "ApplianceHub",
-      avatar: "https://randomuser.me/api/portraits/men/56.jpg",
-      businessName: "ApplianceHub",
-      phone: "+233213445566",
-      verified: true,
-      activeAdsCount: 6,
-      soldAdsCount: 29,
-    },
-    stats: {
-      views: 41000,
-      chats: 55,
-      calls: 22,
-      favorites: 9,
-      reports: 0,
-      orders: 4,
-      boostMultiplier: 2,
-    },
-    subscriptionPlan: "Basic",
-    images: [
-      "https://picsum.photos/seed/fridge1/1200/800",
-      "https://picsum.photos/seed/fridge2/1200/800",
-      "https://picsum.photos/seed/fridge3/1200/800",
-    ],
-    attributes: [
-      { name: "Capacity", value: "300L" },
-      { name: "Type", value: "Double Door" },
-      { name: "EnergyRating", value: "A+" },
-    ],
-    parameters: [{ name: "Brand", slug: "brand", value: "Samsung" }],
-    aggregatedReviews: {
-      averageRating: 4.4,
-      totalReviews: 45,
-      ratingBreakdown: { 5: 28, 4: 10, 3: 5, 2: 1, 1: 1 },
-    },
-    comments: [
-      {
-        id: 5014,
-        user: {
-          id: 214,
-          name: "Yaw K.",
-          avatar: "https://randomuser.me/api/portraits/men/57.jpg",
-        },
-        stars: 4,
-        text: "Works well, low noise.",
-        date: "2025-02-15T10:30:00Z",
-        relatedAds: [],
-      },
-    ],
-    tags: ["fridge", "kitchen", "appliance"],
-  },
-  {
-    id: 13,
-    title: "Plumbing Services - Full House Refit",
-    productCategory: { category: "Services", subcategory: "Home Services" },
-    adPurpose: "Sale",
-    price: 1500,
-    currency: "GHS",
-    location: { city: "Accra", area: "Madina", street: "Madina Service Lane" },
-    condition: "Service",
-    status: "Active",
-    suspensionReason: null,
-    approvedBy: "Jeff",
-    approvedOn: "2025-01-20T09:00:00Z",
-    postedOn: "2025-01-18T08:00:00Z",
-    seller: {
-      id: 113,
-      name: "AquaFix Ltd",
-      avatar: "https://randomuser.me/api/portraits/men/58.jpg",
-      businessName: "AquaFix",
-      phone: "+233244221199",
-      verified: true,
-      activeAdsCount: 5,
-      soldAdsCount: 120,
-    },
-    stats: {
-      views: 15000,
-      chats: 18,
-      calls: 12,
-      favorites: 3,
-      reports: 0,
-      orders: 20,
-      boostMultiplier: 1,
-    },
-    subscriptionPlan: "Basic",
-    images: ["https://picsum.photos/seed/plumbing1/1200/800"],
-    attributes: [
-      { name: "ServiceType", value: "Full refit" },
-      { name: "Guarantee", value: "6 months" },
-    ],
-    parameters: [{ name: "Experience", slug: "experience", value: "10 years" }],
-    aggregatedReviews: {
-      averageRating: 4.1,
-      totalReviews: 32,
-      ratingBreakdown: { 5: 12, 4: 10, 3: 6, 2: 3, 1: 1 },
-    },
-    comments: [
-      {
-        id: 5015,
-        user: {
-          id: 215,
-          name: "Mavis Y.",
-          avatar: "https://randomuser.me/api/portraits/women/59.jpg",
-        },
-        stars: 5,
-        text: "Quick and professional.",
-        date: "2025-01-22T09:00:00Z",
-        relatedAds: [],
-      },
-    ],
-    tags: ["services", "plumbing", "home"],
-  },
-  {
-    id: 14,
-    title: "Yamaha YBR 125 Motorcycle",
-    productCategory: { category: "Vehicles", subcategory: "Motorcycles" },
-    adPurpose: "Sale",
-    price: 8500,
-    currency: "GHS",
-    location: { city: "Takoradi", area: "Western", street: "Takoradi Ring Rd" },
-    condition: "Used",
-    status: "Active",
-    suspensionReason: null,
-    approvedBy: "Jeff",
-    approvedOn: "2025-03-10T12:00:00Z",
-    postedOn: "2025-03-09T10:00:00Z",
-    seller: {
-      id: 114,
-      name: "MotoXpress",
-      avatar: "https://randomuser.me/api/portraits/men/60.jpg",
-      businessName: "MotoXpress Ltd",
-      phone: "+233244990011",
-      verified: true,
-      activeAdsCount: 11,
-      soldAdsCount: 70,
-    },
-    stats: {
-      views: 47000,
-      chats: 56,
-      calls: 23,
-      favorites: 9,
-      reports: 1,
-      orders: 6,
-      boostMultiplier: 3,
-    },
-    subscriptionPlan: "Premium",
-    images: [
-      "https://picsum.photos/seed/moto1/1200/800",
-      "https://picsum.photos/seed/moto2/1200/800",
-      "https://picsum.photos/seed/moto3/1200/800",
-      "https://picsum.photos/seed/moto4/1200/800",
-    ],
-    attributes: [
-      { name: "Engine", value: "125cc" },
-      { name: "Mileage", value: "8,200 km" },
-      { name: "Color", value: "Red" },
-    ],
-    parameters: [{ name: "Brand", slug: "brand", value: "Yamaha" }],
-    aggregatedReviews: {
-      averageRating: 4.4,
-      totalReviews: 58,
-      ratingBreakdown: { 5: 34, 4: 14, 3: 6, 2: 2, 1: 2 },
-    },
-    comments: [
-      {
-        id: 5016,
-        user: {
-          id: 216,
-          name: "Daniel O.",
-          avatar: "https://randomuser.me/api/portraits/men/61.jpg",
-        },
-        stars: 4,
-        text: "Well maintained, single owner.",
-        date: "2025-03-11T09:00:00Z",
-        relatedAds: [],
-      },
-    ],
-    tags: ["motorcycle", "125cc"],
-  },
-  {
-    id: 15,
-    title: "Vacant Land - 500sqm (Residential)",
-    productCategory: { category: "Real Estate", subcategory: "Land" },
-    adPurpose: "Sale",
-    price: 90000,
-    currency: "GHS",
-    location: { city: "Koforidua", area: "Akwadum", street: "Akwadum Road" },
-    condition: "Land",
-    status: "Pending",
-    suspensionReason: null,
-    approvedBy: null,
-    approvedOn: null,
-    postedOn: "2025-08-01T09:00:00Z",
-    seller: {
-      id: 115,
-      name: "Prime Lands",
-      avatar: "https://randomuser.me/api/portraits/men/62.jpg",
-      businessName: "Prime Lands GH",
-      phone: "+233249998877",
-      verified: false,
-      activeAdsCount: 2,
-      soldAdsCount: 3,
-    },
-    stats: {
-      views: 12000,
-      chats: 8,
-      calls: 2,
-      favorites: 1,
-      reports: 0,
-      orders: 0,
-      boostMultiplier: 0,
-    },
-    subscriptionPlan: "Basic",
-    images: [
-      "https://picsum.photos/seed/land1/1200/800",
-      "https://picsum.photos/seed/land2/1200/800",
-      "https://picsum.photos/seed/land3/1200/800",
-    ],
-    attributes: [
-      { name: "Area", value: "500 sqm" },
-      { name: "Zoning", value: "Residential" },
-    ],
-    parameters: [
-      { name: "TitleStatus", slug: "title_status", value: "Stool Land" },
-    ],
-    aggregatedReviews: {
-      averageRating: 0,
-      totalReviews: 0,
-      ratingBreakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
-    },
-    comments: [],
-    tags: ["land", "residential"],
-  },
-  {
-    id: 16,
-    title: "Used Textbooks Bundle - University Level",
-    productCategory: { category: "Books", subcategory: "Education" },
-    adPurpose: "Sale",
-    price: 250,
-    currency: "GHS",
-    location: { city: "Accra", area: "Legon", street: "Legon Campus Rd" },
-    condition: "Used",
-    status: "Active",
-    suspensionReason: null,
-    approvedBy: "Jeff",
-    approvedOn: "2025-09-01T10:00:00Z",
-    postedOn: "2025-08-28T09:00:00Z",
-    seller: {
-      id: 116,
-      name: "Legon Books",
-      avatar: "https://randomuser.me/api/portraits/men/63.jpg",
-      businessName: "Legon Books",
-      phone: "+233204445566",
-      verified: false,
-      activeAdsCount: 6,
-      soldAdsCount: 140,
-    },
-    stats: {
-      views: 8200,
-      chats: 12,
-      calls: 2,
-      favorites: 4,
-      reports: 0,
-      orders: 22,
-      boostMultiplier: 1,
-    },
-    subscriptionPlan: "Basic",
-    images: [
-      "https://picsum.photos/seed/books1/1200/800",
-      "https://picsum.photos/seed/books2/1200/800",
-    ],
-    attributes: [
-      { name: "Subjects", value: "CS, Math, Engineering" },
-      { name: "Condition", value: "Good" },
-    ],
-    parameters: [{ name: "Edition", slug: "edition", value: "Various" }],
-    aggregatedReviews: {
-      averageRating: 4.0,
-      totalReviews: 12,
-      ratingBreakdown: { 5: 6, 4: 3, 3: 2, 2: 1, 1: 0 },
-    },
-    comments: [
-      {
-        id: 5017,
-        user: {
-          id: 217,
-          name: "Nana P.",
-          avatar: "https://randomuser.me/api/portraits/women/64.jpg",
-        },
-        stars: 4,
-        text: "Good selection for students.",
-        date: "2025-09-02T08:00:00Z",
-        relatedAds: [],
-      },
-    ],
-    tags: ["books", "textbooks", "students"],
-  },
-  {
-    id: 17,
-    title: "Commercial Washing Machine - 20kg",
-    productCategory: { category: "Business Equipment", subcategory: "Laundry" },
-    adPurpose: "Sale",
-    price: 7200,
-    currency: "GHS",
-    location: { city: "Tema", area: "Tema Harbour", street: "Industrial Ave" },
-    condition: "Used",
-    status: "Suspended",
-    suspensionReason: "Reported for misleading photos — under review",
-    suspendedBy: "Jeff",
-    suspendedOn: "2025-09-15T10:00:00Z",
-    approvedBy: "Sandra Biom",
-    approvedOn: "2025-08-10T09:00:00Z",
-    postedOn: "2025-08-09T07:00:00Z",
-    seller: {
-      id: 117,
-      name: "LaundryPro",
-      avatar: "https://randomuser.me/api/portraits/men/65.jpg",
-      businessName: "LaundryPro Services",
-      phone: "+233244223344",
-      verified: true,
-      activeAdsCount: 2,
-      soldAdsCount: 5,
-    },
-    stats: {
-      views: 5400,
-      chats: 6,
-      calls: 1,
-      favorites: 0,
-      reports: 4,
-      orders: 0,
-      boostMultiplier: 0,
-    },
-    subscriptionPlan: "Premium",
-    images: [
-      "https://picsum.photos/seed/wash1/1200/800",
-      "https://picsum.photos/seed/wash2/1200/800",
-      "https://picsum.photos/seed/wash3/1200/800",
-      "https://picsum.photos/seed/wash4/1200/800",
-      "https://picsum.photos/seed/wash5/1200/800",
-    ],
-    attributes: [
-      { name: "Capacity", value: "20kg" },
-      { name: "Power", value: "220V" },
-    ],
-    parameters: [{ name: "Brand", slug: "brand", value: "SpeedQueen" }],
-    aggregatedReviews: {
-      averageRating: 3.8,
-      totalReviews: 10,
-      ratingBreakdown: { 5: 4, 4: 2, 3: 2, 2: 1, 1: 1 },
-    },
-    comments: [
-      {
-        id: 5018,
-        user: {
-          id: 218,
-          name: "Ato S.",
-          avatar: "https://randomuser.me/api/portraits/men/66.jpg",
-        },
-        stars: 2,
-        text: "Photos didn't match the actual unit.",
-        date: "2025-09-14T12:00:00Z",
-        relatedAds: [],
-      },
-    ],
-    tags: ["laundry", "commercial"],
-  },
-  {
-    id: 18,
-    title: "Gym Membership - 6 Months (All Access)",
-    productCategory: { category: "Services", subcategory: "Fitness" },
-    adPurpose: "Sale",
-    price: 600,
-    currency: "GHS",
-    location: { city: "Accra", area: "Osu", street: "Fitness Center Rd" },
-    condition: "Service",
-    status: "Active",
-    suspensionReason: null,
-    approvedBy: "Jeff",
-    approvedOn: "2025-07-01T08:00:00Z",
-    postedOn: "2025-06-28T09:00:00Z",
-    seller: {
-      id: 118,
-      name: "FitZone",
-      avatar: "https://randomuser.me/api/portraits/men/67.jpg",
-      businessName: "FitZone Gyms",
-      phone: "+233203445566",
-      verified: true,
-      activeAdsCount: 3,
-      soldAdsCount: 400,
-    },
-    stats: {
-      views: 7200,
-      chats: 25,
-      calls: 10,
-      favorites: 12,
-      reports: 0,
-      orders: 120,
-      boostMultiplier: 2,
-    },
-    subscriptionPlan: "Basic",
-    images: [
-      "https://picsum.photos/seed/gym1/1200/800",
-      "https://picsum.photos/seed/gym2/1200/800",
-      "https://picsum.photos/seed/gym3/1200/800",
-    ],
-    attributes: [
-      { name: "Duration", value: "6 months" },
-      { name: "Access", value: "All branches" },
-    ],
-    parameters: [{ name: "PlanType", slug: "plan_type", value: "All Access" }],
-    aggregatedReviews: {
-      averageRating: 4.2,
-      totalReviews: 210,
-      ratingBreakdown: { 5: 140, 4: 45, 3: 15, 2: 6, 1: 4 },
-    },
-    comments: [
-      {
-        id: 5019,
-        user: {
-          id: 219,
-          name: "Selina T.",
-          avatar: "https://randomuser.me/api/portraits/women/68.jpg",
-        },
-        stars: 5,
-        text: "Clean facilities and great trainers.",
-        date: "2025-07-02T07:30:00Z",
-        relatedAds: [],
-      },
-    ],
-    tags: ["fitness", "gym", "membership"],
-  },
-  {
-    id: 19,
-    title: "Vintage Acoustic Guitar - Yamaha FG800",
-    productCategory: { category: "Music", subcategory: "Instruments" },
-    adPurpose: "Sale",
-    price: 750,
-    currency: "GHS",
-    location: { city: "Kumasi", area: "Bantama", street: "Music Lane" },
-    condition: "Used",
-    status: "Active",
-    suspensionReason: null,
-    approvedBy: "Jeff",
-    approvedOn: "2025-04-12T10:00:00Z",
-    postedOn: "2025-04-11T09:00:00Z",
-    seller: {
-      id: 119,
-      name: "Strings & Things",
-      avatar: "https://randomuser.me/api/portraits/men/69.jpg",
-      businessName: "Strings & Things",
-      phone: "+233244556600",
-      verified: false,
-      activeAdsCount: 3,
-      soldAdsCount: 22,
-    },
-    stats: {
-      views: 6400,
-      chats: 18,
-      calls: 4,
-      favorites: 6,
-      reports: 0,
-      orders: 2,
-      boostMultiplier: 1,
-    },
-    subscriptionPlan: "Basic",
-    images: [
-      "https://picsum.photos/seed/guitar1/1200/800",
-      "https://picsum.photos/seed/guitar2/1200/800",
-      "https://picsum.photos/seed/guitar3/1200/800",
-      "https://picsum.photos/seed/guitar4/1200/800",
-    ],
-    attributes: [
-      { name: "Model", value: "FG800" },
-      { name: "Year", value: "2016" },
-      { name: "ConditionNotes", value: "Minor finish wear" },
-    ],
-    parameters: [{ name: "Brand", slug: "brand", value: "Yamaha" }],
-    aggregatedReviews: {
-      averageRating: 4.3,
-      totalReviews: 14,
-      ratingBreakdown: { 5: 7, 4: 4, 3: 2, 2: 1, 1: 0 },
-    },
-    comments: [
-      {
-        id: 5020,
-        user: {
-          id: 220,
-          name: "Kojo N.",
-          avatar: "https://randomuser.me/api/portraits/men/70.jpg",
-        },
-        stars: 5,
-        text: "Warm tone and well set up.",
-        date: "2025-04-13T10:00:00Z",
-        relatedAds: [],
-      },
-    ],
-    tags: ["guitar", "music", "vintage"],
-  },
-  {
-    id: 20,
-    title: "Coworking Desk - Monthly Pass (Central Accra)",
-    productCategory: { category: "Services", subcategory: "Coworking" },
-    adPurpose: "Sale",
-    price: 220,
-    currency: "GHS",
-    location: { city: "Accra", area: "Central", street: "Business Hub Rd" },
-    condition: "Service",
-    status: "Active",
-    suspensionReason: null,
-    approvedBy: "Jeff",
-    approvedOn: "2025-07-10T10:00:00Z",
-    postedOn: "2025-07-09T08:00:00Z",
-    seller: {
-      id: 120,
-      name: "WorkSpace GH",
-      avatar: "https://randomuser.me/api/portraits/men/71.jpg",
-      businessName: "WorkSpace GH",
-      phone: "+233303445566",
-      verified: true,
-      activeAdsCount: 4,
-      soldAdsCount: 200,
-    },
-    stats: {
-      views: 9800,
-      chats: 30,
-      calls: 18,
-      favorites: 20,
-      reports: 0,
-      orders: 85,
-      boostMultiplier: 2,
-    },
-    subscriptionPlan: "Premium",
-    images: [
-      "https://picsum.photos/seed/cowork1/1200/800",
-      "https://picsum.photos/seed/cowork2/1200/800",
-      "https://picsum.photos/seed/cowork3/1200/800",
-      "https://picsum.photos/seed/cowork4/1200/800",
-      "https://picsum.photos/seed/cowork5/1200/800",
-      "https://picsum.photos/seed/cowork6/1200/800",
-      "https://picsum.photos/seed/cowork7/1200/800",
-      "https://picsum.photos/seed/cowork8/1200/800",
-      "https://picsum.photos/seed/cowork9/1200/800",
-    ],
-    attributes: [
-      { name: "Access", value: "24/7" },
-      { name: "Included", value: "High-speed WiFi, Printing" },
-    ],
-    parameters: [
-      { name: "SeatType", slug: "seat_type", value: "Dedicated Desk" },
-      { name: "Duration", slug: "duration", value: "Monthly" },
-    ],
-    aggregatedReviews: {
-      averageRating: 4.4,
-      totalReviews: 66,
-      ratingBreakdown: { 5: 40, 4: 15, 3: 7, 2: 3, 1: 1 },
-    },
-    comments: [
-      {
-        id: 5021,
-        user: {
-          id: 221,
-          name: "Micheal R.",
-          avatar: "https://randomuser.me/api/portraits/men/72.jpg",
-        },
-        stars: 5,
-        text: "Great workspace and strong WiFi.",
-        date: "2025-07-11T09:00:00Z",
-        relatedAds: [],
-      },
-    ],
-    tags: ["coworking", "desk", "workspace"],
-  },
-];
+    condition: ad.condition ?? ad.itemCondition ?? null,
+    status: ad.status ?? ad.moderationStatus ?? "active",
+    suspensionReason: ad.suspensionReason ?? null,
+    approvedBy:
+      // NOTE: backend often returns an id for approvedBy; frontend expects a name.
+      // If you want a name here, include it on the backend or fetch the user and map.
+      ad.approvedBy ?? ad.approvedByUser ?? null,
+    approvedOn: ad.approvedAt ?? ad.approvedOn ?? ad.moderatedAt ?? null,
+    postedOn: ad.createdAt ?? ad.postedOn ?? ad.postedAt ?? null,
+    seller,
+    stats,
+    subscriptionPlan: ad.subscriptionPlan ?? ad.plan ?? null,
+    images,
+    attributes,
+    parameters,
+    aggregatedReviews,
+    comments,
+    tags,
+    _raw: ad, // keep raw for debugging
+  };
+}
+
+/** map full response object -> { items: [...], pagination, filters, raw } */
+export function mapAdsResponse(backendResponse) {
+  const res = backendResponse ?? {};
+  // If it's already in the mapped shape, return it
+  if (res.items && Array.isArray(res.items)) {
+    return {
+      items: res.items,
+      pagination: res.pagination ?? null,
+      filters: res.filters ?? null,
+      raw: res.raw ?? res,
+    };
+  }
+
+  // normalized raw payload
+  const data = res.data ?? res;
+  const rawAds = data?.ads ?? data?.items ?? res?.ads ?? [];
+  const arr = Array.isArray(rawAds) ? rawAds : [];
+
+  // detect items already mapped to UI shape
+  const looksMapped = (it) =>
+    it &&
+    (it.stats !== undefined ||
+      it.productCategory !== undefined ||
+      it._raw !== undefined);
+
+  const items = arr
+    .map((it) => (it ? (looksMapped(it) ? it : mapSingleAdToUI(it)) : null))
+    .filter(Boolean);
+
+  const pagination = data.pagination ?? res.pagination ?? null;
+  const filters = data.filters ?? res.filters ?? null;
+  return { items, pagination, filters, raw: res };
+}
+
+/** helper: a promise for quick import/use
+ *  Note: getAdsList returns a mapped shape in the API helper; if it returns raw,
+ *  mapAdsResponse handles raw -> mapped.
+ */
+let adsMapped = { items: [], pagination: null, filters: null, raw: null };
+try {
+  const adsResponse = await getAdsList();
+  adsMapped = mapAdsResponse(adsResponse);
+} catch (e) {
+  console.error("adsMapper: failed to load ads at module init:", e);
+}
+
+export const adsData = adsMapped.items || [];
+export const adsResponseExport = adsMapped;
+
+/** default export */
+export default {
+  getAdsList,
+  getAdById,
+  getAdsStats,
+  updateAdStatus,
+  bulkUpdateAds,
+  deleteAdImage,
+  mapSingleAdToUI,
+  mapAdsResponse,
+  adsData,
+  adsResponse: adsResponseExport,
+};
