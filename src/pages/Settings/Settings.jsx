@@ -1,8 +1,12 @@
 import React, { useState } from "react";
 import styles from "./settings.module.css";
 import { Caret } from "../../components/SVGIcons/Caret";
-import { settingsData as initialSettingsData } from "../../api/settings";
-import { formatChatTimestamp } from "../../utils/numConverters";
+import {
+  settingsData as initialSettingsData,
+  updatePrivacyPolicy,
+  updateTermsConditions,
+} from "../../api/settings";
+import { formatChatTimestamp, timeAgo } from "../../utils/numConverters";
 import { ReviewStars } from "../../components/ReviewStars/ReviewStars";
 
 /**
@@ -37,6 +41,14 @@ export const Settings = () => {
   // toggled resolve inputs (map reportId -> boolean) and resolve notes
   const [resolveOpenById, setResolveOpenById] = useState({});
   const [resolveNotesById, setResolveNotesById] = useState({});
+  const [tcpContent, setTcpContent] = useState(() => {
+    return {
+      privacyPolicy: (settingsData.privacyPolicy?.content || []).join("\n\n"),
+      termsConditions: (settingsData.termsConditions?.content || []).join(
+        "\n\n"
+      ),
+    };
+  });
 
   // left-side menu items
   const settings = [
@@ -160,12 +172,58 @@ export const Settings = () => {
           <div className={styles.tcpContent}>
             <h1>{settings?.find((s) => s?.slug === selectedSetting)?.name}</h1>
 
-            <p>Dated {currentTCPDate}</p>
+            <p>Dated {timeAgo(currentTCPDate)}</p>
 
             <textarea
-              defaultValue={settingsData[selectedSetting].content}
-              readOnly
+              value={tcpContent[selectedSetting]}
+              onChange={(e) =>
+                setTcpContent((prev) => ({
+                  ...prev,
+                  [selectedSetting]: e.target.value,
+                }))
+              }
             />
+            {/* <textarea defaultValue={settingsData[selectedSetting]?.content} /> */}
+
+            <button
+              className={styles.saveButton}
+              onClick={async () => {
+                const contentArr = tcpContent[selectedSetting]
+                  .split(/\n{2,}/)
+                  .map((s) => s.trim())
+                  .filter(Boolean);
+
+                try {
+                  let updated;
+                  if (selectedSetting === "privacyPolicy") {
+                    updated = await updatePrivacyPolicy({
+                      title: settingsData.privacyPolicy.title,
+                      content: contentArr,
+                      version: settingsData.privacyPolicy.version,
+                    });
+                  } else if (selectedSetting === "termsConditions") {
+                    updated = await updateTermsConditions({
+                      title: settingsData.termsConditions.title,
+                      content: contentArr,
+                      version: settingsData.termsConditions.version,
+                    });
+                  }
+
+                  // update local state so UI reflects latest
+                  setSettingsData((prev) => ({
+                    ...prev,
+                    [selectedSetting]: updated,
+                  }));
+
+                  alert("Saved successfully!");
+                } catch (err) {
+                  console.error("Save failed:", err);
+                  alert("Failed to save. " + (err?.message ?? ""));
+                }
+              }}
+            >
+              Save
+            </button>
           </div>
         ) : (
           <div className={styles.feedbackContainer}>

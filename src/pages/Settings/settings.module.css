@@ -70,10 +70,18 @@
 
 .settingBox textarea {
   width: 100%;
-  height: calc(90dvh - var(--header-height) - (4 * var(--content-padding)));
+  height: calc(80dvh - var(--header-height) - (4 * var(--content-padding)));
   background-color: transparent;
   border: none;
   outline: none;
+  resize: none;
+}
+
+.saveButton {
+  padding: var(--content-padding) calc(var(--content-padding) * 2);
+  background-color: var(--color-theme-green);
+  border-radius: var(--radius-md);
+  align-self: flex-end;
 }
 
 .feedbackContainer {
