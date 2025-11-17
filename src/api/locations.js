@@ -65,12 +65,10 @@
 //   },
 // ];
 
-// src/api/locations.js
 import { getToken } from "./auth";
 
 const API_BASE = `${import.meta.env.VITE_API_BASE || ""}/admin/locations`;
 
-/** small fetch helper */
 async function fetchJson(path = "", opts = {}) {
   const token = getToken();
   const url = `${API_BASE}${path}`;
@@ -102,22 +100,13 @@ async function fetchJson(path = "", opts = {}) {
   return res.json().catch(() => ({}));
 }
 
-/** Map backend region -> UI region shape:
- * backend possibilities handled:
- *  - res.data.regions = [{ id, name, towns: [{ id, name }, ...] }, ...]
- *  - res.data.regions = [{ name, towns: ["A","B"] }, ...]
- *  - res.data.regions = { regionName: [towns...] } (less likely)
- */
 export function mapLocationsResponse(raw) {
   const res = raw ?? {};
   const data = res.data ?? res;
 
-  // extract array of regions in common places
   let rawRegions = data.regions || [];
 
-  // if it was a single object keyed by region name, convert
   if (!Array.isArray(rawRegions) && typeof rawRegions === "object") {
-    // try to convert { "Greater Accra": ["Accra","Tema"], ... } -> array
     const obj = rawRegions;
     rawRegions = Object.keys(obj).map((k) => ({
       name: k,
@@ -129,19 +118,30 @@ export function mapLocationsResponse(raw) {
     ? rawRegions.map((r) => {
         const regionName = r.name ?? r.region ?? r.title ?? null;
 
-        // towns can be array of strings OR array of objects
         let townsArr = [];
         if (Array.isArray(r.towns)) {
           townsArr = r.towns
             .map((t) => {
-              if (typeof t === "string") return t;
-              if (t && typeof t === "object")
-                return t.name ?? t.title ?? t.town ?? "";
-              return String(t ?? "");
+              if (typeof t === "string") {
+                return {
+                  id: t, // Use the string as ID temporarily
+                  name: t,
+                };
+              }
+              if (t && typeof t === "object") {
+                // ✅ CRITICAL FIX: Properly extract ID and name
+                return {
+                  id: t.id, // Use the actual database ID
+                  name: t.name ?? t.title ?? t.town ?? "",
+                };
+              }
+              return { id: String(t), name: String(t ?? "") };
             })
-            .filter(Boolean);
+            .filter((t) => t.name);
         } else if (Array.isArray(r.townNames)) {
-          townsArr = r.townNames.map(String).filter(Boolean);
+          townsArr = r.townNames
+            .map((name) => ({ id: name, name }))
+            .filter((t) => t.name);
         } else {
           townsArr = [];
         }
@@ -157,12 +157,10 @@ export function mapLocationsResponse(raw) {
   return { regions, raw: res };
 }
 
-/** PUBLIC: GET / (list regions and towns) */
 export async function getLocations() {
   try {
     const res = await fetchJson("", { method: "GET" });
     const mapped = mapLocationsResponse(res);
-    // UI expects array like locationsData = [{ region: "Greater Accra", towns: [...] }, ...]
     return mapped.regions;
   } catch (err) {
     console.error("getLocations error:", err);
@@ -170,10 +168,6 @@ export async function getLocations() {
   }
 }
 
-/** PUBLIC: create a region
- * POST /regions
- * body: { name: string } (or whatever your backend schema expects)
- */
 export async function createRegion(body = { name: "" }) {
   try {
     const res = await fetchJson("/regions", { method: "POST", body });
@@ -184,14 +178,10 @@ export async function createRegion(body = { name: "" }) {
   }
 }
 
-/** PUBLIC: add a town
- * POST /regions/:regionId/towns
- * body: { name: string } (or schema used by backend)
- */
 export async function addTown(regionId, body = { name: "" }) {
   if (!regionId) throw new Error("regionId required");
   try {
-    const path = `/${encodeURIComponent(String(regionId))}/towns`;
+    const path = `/regions/${encodeURIComponent(String(regionId))}/towns`;
     const res = await fetchJson(path, { method: "POST", body });
     return res;
   } catch (err) {
@@ -200,14 +190,10 @@ export async function addTown(regionId, body = { name: "" }) {
   }
 }
 
-/** PUBLIC: update a town
- * PUT /regions/:regionId/towns/:townId
- * body: { name: "New name" } (or backend schema)
- */
 export async function updateTown(regionId, townId, body = {}) {
   if (!regionId || !townId) throw new Error("regionId and townId required");
   try {
-    const path = `/${encodeURIComponent(
+    const path = `/regions/${encodeURIComponent(
       String(regionId)
     )}/towns/${encodeURIComponent(String(townId))}`;
     const res = await fetchJson(path, { method: "PUT", body });
@@ -218,15 +204,12 @@ export async function updateTown(regionId, townId, body = {}) {
   }
 }
 
-/** PUBLIC: delete a town
- * DELETE /regions/:regionId/towns/:townId
- */
 export async function deleteTown(regionId, townId) {
   if (!regionId || !townId) throw new Error("regionId and townId required");
   try {
-    const path = `/${encodeURIComponent(regionId)}/towns/${encodeURIComponent(
-      townId
-    )}`;
+    const path = `/regions/${encodeURIComponent(
+      regionId
+    )}/towns/${encodeURIComponent(townId)}`;
     const res = await fetchJson(path, { method: "DELETE" });
     return res;
   } catch (err) {
@@ -235,7 +218,6 @@ export async function deleteTown(regionId, townId) {
   }
 }
 
-/** Top-level awaited export so UI can import `locationsData` directly */
 export const locationsData = await getLocations();
 
 export default {
