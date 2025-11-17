@@ -18,7 +18,7 @@ jobs:
         with:
           host: ${{ secrets.DROPLET_HOSTIP }}
           username: ${{ secrets.DROPLET_USER }}
-          key:  ${{ secrets.DROPLET_KEY }}
+          key:  ${{ secrets.DROPLET_PRIVATE_KEY }}
           port: 22
           script: |
             cd oysloeadmin
