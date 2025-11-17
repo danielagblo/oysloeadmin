@@ -18,7 +18,7 @@ jobs:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v0.1.9
         with:
-          host: ${{ secrets.DROPLET_HOST }}
+          host: ${{ secrets.DROPLET_HOSTIP }}
           username: ${{ secrets.DROPLET_USER }}
           key: ${{ secrets.DROPLET_KEY }}
           port: 22
