@@ -10,34 +10,28 @@ jobs:
     runs-on: ubuntu-latest
     environment: prod
     steps:
-      # 1️⃣ Checkout the repository code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2️⃣ Deploy via SSH using your script
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v0.1.9
         with:
-          host: ${{ secrets.DROPLET_HOSTIP }}
+          host: 207.154.219.165
           username: ${{ secrets.DROPLET_USER }}
           key: ${{ secrets.DROPLET_KEY }}
           port: 22
           script: |
             cd oysloeadmin
             sudo rm -rf dist/* 
-            git pull origin main           # update frontend code
-            npm install                    # install frontend dependencies
-            npm run build                  # build the frontend (React)
-
-            # Remove old frontend files (optional, safer to remove first)
+            git pull origin main           
+            npm install                   
+            npm run build                 
+            
             sudo rm -rf /var/www/oysloeadmin/dist/*
 
-            # Copy new build files to the serving folder
             sudo cp -r dist/* /var/www/oysloeadmin/dist
 
-            # Ensure permissions (so Nginx can read them)
             sudo chown -R www-data:www-data /var/www/oysloeadmin
             sudo chmod -R 755 /var/www/oysloeadmin
 
-            # Reload Nginx to serve updated frontend
             sudo systemctl restart nginx
