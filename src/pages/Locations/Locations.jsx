@@ -37,23 +37,9 @@ export const Locations = () => {
     (initialData || []).map((region) => ({
       id: region._raw?.id,
       region: region.region,
-      // ✅ SIMPLIFIED: Use the towns as they come from the API
       towns: region.towns || [],
     }))
   );
-
-  // React.useEffect(() => {
-  //   console.log(
-  //     "INITIAL DATA STRUCTURE:",
-  //     JSON.stringify(initialData, null, 2)
-  //   );
-
-  //   if (initialData && initialData.length > 0) {
-  //     // console.log("FIRST REGION:", initialData[0]);
-  //     // console.log("FIRST REGION TOWNS:", initialData[0]?.towns);
-  //     console.log("Regions: ", regions);
-  //   }
-  // }, []);
 
   // ... rest of your component
   const sensors = useSensors(useSensor(PointerSensor));
