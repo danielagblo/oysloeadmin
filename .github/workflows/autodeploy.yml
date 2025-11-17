@@ -15,7 +15,7 @@ jobs:
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v0.1.4
-        with:
+        env:
           host: ${{ secrets.DROPLET_HOSTIP }}
           username: ${{ secrets.DROPLET_USER }}
           key:  ${{ secrets.DROPLET_PRIVATE_KEY }}
