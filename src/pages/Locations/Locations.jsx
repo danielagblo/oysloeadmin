@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 import styles from "./locations.module.css";
-import { locationsData as initialData } from "../../api/locations";
+import {
+  locationsData as initialData,
+  getLocations,
+  createRegion,
+  addTown,
+  updateTown,
+  deleteTown,
+} from "../../api/locations";
 import {
   DndContext,
   closestCenter,
@@ -24,38 +31,95 @@ import { PlusIcon } from "lucide-react";
 import { DragIcon } from "../../components/SVGIcons/DragIcon";
 
 export const Locations = () => {
-  const [regions, setRegions] = useState(initialData);
+  const [regions, setRegions] = useState(
+    (initialData || []).map((region) => ({
+      // Use ONLY the database ID from _raw
+      id: region._raw?.id, // ← This must match what your API expects
+      region: region.region,
+      towns: (region.towns || []).map((t) =>
+        typeof t === "string"
+          ? { id: t, name: t } // Use the string as ID temporarily
+          : {
+              id: t.id || t.name, // Use actual DB ID
+              name: t.name || String(t),
+            }
+      ),
+    }))
+  );
   const sensors = useSensors(useSensor(PointerSensor));
   const [activeItem, setActiveItem] = useState(null);
 
   // Add town immutably
-  const handleAddTown = (regionName, newTown) => {
-    setRegions((prev) =>
-      prev.map((r) =>
-        r.region === regionName ? { ...r, towns: [...r.towns, newTown] } : r
-      )
+  const handleAddTown = async (regionId, newTownName) => {
+    console.log(
+      "🔍 Adding town - Region ID:",
+      regionId,
+      "Town Name:",
+      newTownName,
+      "All Regions: ",
+      regions
     );
+
+    try {
+      const res = await addTown(regionId, { name: newTownName });
+      console.log("🔍 API Response:", res);
+
+      setRegions((prev) =>
+        prev.map((r) => {
+          if (r.id === regionId) {
+            const newTown = {
+              id: res.id || `temp-${Date.now()}`, // Use actual DB ID if available
+              name: res.name || newTownName,
+            };
+            console.log("🔍 Adding town to UI:", newTown);
+            return {
+              ...r,
+              towns: [...r.towns, newTown],
+            };
+          }
+          return r;
+        })
+      );
+    } catch (err) {
+      console.error("❌ Failed to add town:", err);
+      alert("Failed to add town: " + err.message);
+    }
   };
 
   // Edit town immutably: replace oldTown with newTown
-  const handleEditTown = (regionName, oldTown, newTown) => {
-    setRegions((prev) =>
-      prev.map((r) =>
-        r.region === regionName
-          ? { ...r, towns: r.towns.map((t) => (t === oldTown ? newTown : t)) }
-          : r
-      )
-    );
+  const handleEditTown = async (regionId, townId, newName) => {
+    try {
+      await updateTown(regionId, townId, { name: newName });
+      setRegions((prev) =>
+        prev.map((r) =>
+          r.id === regionId
+            ? {
+                ...r,
+                towns: r.towns.map((t) =>
+                  t.id === townId ? { ...t, name: newName } : t
+                ),
+              }
+            : r
+        )
+      );
+    } catch (err) {
+      console.error("Failed to update town:", err);
+    }
   };
 
-  const handleDeleteTown = (regionName, townToDelete) => {
-    setRegions((prev) =>
-      prev.map((r) =>
-        r.region === regionName
-          ? { ...r, towns: r.towns.filter((t) => t !== townToDelete) }
-          : r
-      )
-    );
+  const handleDeleteTown = async (regionId, townId) => {
+    try {
+      await deleteTown(regionId, townId);
+      setRegions((prev) =>
+        prev.map((r) =>
+          r.id === regionId
+            ? { ...r, towns: r.towns.filter((t) => t.id !== townId) }
+            : r
+        )
+      );
+    } catch (err) {
+      console.error("Failed to delete town:", err);
+    }
   };
 
   function handleDragStart(event) {
@@ -73,8 +137,8 @@ export const Locations = () => {
     if (active.data.current?.type === "region") {
       if (active.id !== over.id) {
         setRegions((prev) => {
-          const oldIndex = prev.findIndex((r) => r.region === active.id);
-          const newIndex = prev.findIndex((r) => r.region === over.id);
+          const oldIndex = prev.findIndex((r) => r.id === active.id);
+          const newIndex = prev.findIndex((r) => r.id === over.id);
           return arrayMove(prev, oldIndex, newIndex);
         });
       }
@@ -82,15 +146,15 @@ export const Locations = () => {
 
     // --- Town reorder (within same region only)
     if (active.data.current?.type === "town") {
-      const regionName = active.data.current.region;
-      const overRegionName = over.data.current?.region || regionName;
-
-      if (regionName === overRegionName) {
+      const regionId = active.data.current.regionId;
+      const overRegionId = over.data.current?.regionId ?? regionId;
+      if (regionId === overRegionId) {
         setRegions((prev) =>
           prev.map((region) => {
-            if (region.region !== regionName) return region;
-            const oldIndex = region.towns.indexOf(active.id);
-            const newIndex = region.towns.indexOf(over.id);
+            if (region.id !== regionId) return region;
+            const oldIndex = region.towns.findIndex((t) => t.id === active.id);
+            const newIndex = region.towns.findIndex((t) => t.id === over.id);
+
             return {
               ...region,
               towns: arrayMove(region.towns, oldIndex, newIndex),
@@ -111,13 +175,13 @@ export const Locations = () => {
       onDragEnd={handleDragEnd}
     >
       <SortableContext
-        items={regions.map((r) => r.region)}
+        items={regions.map((r) => r.id)}
         strategy={horizontalListSortingStrategy}
       >
         <div className={styles.locationsContainer}>
           {regions.map((region, idx) => (
             <SortableRegion
-              key={region.region}
+              key={region.id}
               regionData={region}
               idx={idx}
               onAddTown={handleAddTown}
@@ -133,13 +197,20 @@ export const Locations = () => {
         {activeItem?.data?.current?.type === "region" && (
           <div className={`${styles.location} ${styles.dragOverlay}`}>
             <RegionPreview
-              region={regions.find((r) => r.region === activeItem.id)}
+              region={regions.find((r) => r.id === activeItem.id)}
             />
           </div>
         )}
         {activeItem?.data?.current?.type === "town" && (
           <div className={`${styles.townDragOverlay} ${styles.dragOverlay}`}>
-            <TownPreview id={activeItem.id} />
+            {console.log(
+              "Active Item in Overlay:",
+              activeItem.data.current?.name
+            )}
+            <TownPreview
+              id={activeItem.id}
+              regionName={activeItem?.data?.current?.name}
+            />
           </div>
         )}
       </DragOverlay>
@@ -163,8 +234,8 @@ function SortableRegion({
     transition,
     isDragging,
   } = useSortable({
-    id: regionData.region,
-    data: { type: "region" },
+    id: regionData.id,
+    data: { type: "region", regionId: regionData.id },
   });
 
   const style = {
@@ -193,7 +264,7 @@ function RegionPreview({ region, idx, onAddTown, onEditTown, onDeleteTown }) {
   const handleAddTown = () => {
     const value = townInput.trim();
     if (!value) return;
-    onAddTown(region.region, value);
+    onAddTown(region.id, value);
     setTownInput("");
   };
 
@@ -209,15 +280,16 @@ function RegionPreview({ region, idx, onAddTown, onEditTown, onDeleteTown }) {
       </div>
 
       <SortableContext
-        items={region.towns}
+        items={region.towns.map((t) => t.id)}
         strategy={verticalListSortingStrategy}
       >
         <ul className={styles.townList}>
           {region.towns.map((town) => (
             <SortableTown
-              key={town}
-              id={town}
-              regionName={region.region}
+              key={town.id}
+              id={town.id}
+              regionId={region.id}
+              name={town.name}
               onEditTown={onEditTown}
               onDeleteTown={onDeleteTown}
             />
@@ -248,7 +320,14 @@ function RegionPreview({ region, idx, onAddTown, onEditTown, onDeleteTown }) {
 
 /* -------------------- Town (sortable item) -------------------- */
 /* Note: listeners moved to handle span so clicks in inputs/buttons won't start drag */
-function SortableTown({ id, regionName, onEditTown, onDeleteTown }) {
+function SortableTown({
+  id,
+  name,
+  regionId,
+  regionName,
+  onEditTown,
+  onDeleteTown,
+}) {
   const {
     attributes,
     listeners,
@@ -258,11 +337,13 @@ function SortableTown({ id, regionName, onEditTown, onDeleteTown }) {
     isDragging,
   } = useSortable({
     id,
-    data: { type: "town", region: regionName },
+    data: { type: "town", regionId, name },
   });
 
   const [isEditing, setIsEditing] = useState(false);
-  const [value, setValue] = useState(id);
+  const [value, setValue] = useState(name);
+
+  React.useEffect(() => setValue(name), [name]);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -279,7 +360,7 @@ function SortableTown({ id, regionName, onEditTown, onDeleteTown }) {
   const commitEdit = () => {
     const newVal = value.trim();
     if (newVal && newVal !== id) {
-      onEditTown(regionName, id, newVal);
+      onEditTown(regionId, id, newVal);
     }
     setIsEditing(false);
   };
@@ -298,8 +379,7 @@ function SortableTown({ id, regionName, onEditTown, onDeleteTown }) {
       className={styles.townDragOverlay}
       ref={setNodeRef}
       style={style}
-      {...attributes} /* keep attributes on li for roles / aria */
-      // DO NOT spread listeners here — handle only on drag icon
+      {...attributes}
     >
       {/* Drag handle: attach listeners here so only this span starts drag */}
       <span {...listeners} style={{ display: "grid" }}>
@@ -319,24 +399,24 @@ function SortableTown({ id, regionName, onEditTown, onDeleteTown }) {
           style={{ flex: 1 }}
         />
       ) : (
-        <p style={{ flex: 1 }}>{id}</p>
+        <p style={{ flex: 1 }}>{name}</p>
       )}
 
       {/* edit button */}
       <button
         onClick={startEditing}
-        onPointerDown={(e) => e.stopPropagation()} // prevent accidental drag start
-        aria-label={`Edit ${id}`}
+        onPointerDown={(e) => e.stopPropagation()} // prevent accregionNameental drag start
+        aria-label={`Edit ${regionName}`}
       >
         <EditIcon size={1} />
       </button>
       <button
         onClick={(e) => {
           e.stopPropagation();
-          onDeleteTown(regionName, id);
+          onDeleteTown(regionId, id);
         }}
         onPointerDown={(e) => e.stopPropagation()}
-        aria-label={`Delete ${id}`}
+        aria-label={`Delete ${regionName}`}
       >
         <ImageIcon src={TrashIcon} size={1.3} />
       </button>
@@ -345,13 +425,13 @@ function SortableTown({ id, regionName, onEditTown, onDeleteTown }) {
 }
 
 /* -------------------- Town preview for overlay -------------------- */
-function TownPreview({ id }) {
+function TownPreview({ id, regionName }) {
   return (
     <li className={styles.townDragOverlay}>
       <span>
         <DragIcon />
       </span>
-      <p>{id}</p>
+      <p>{regionName}</p>
       <div>
         <EditIcon size={1} />
       </div>

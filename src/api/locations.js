@@ -218,6 +218,23 @@ export async function updateTown(regionId, townId, body = {}) {
   }
 }
 
+/** PUBLIC: delete a town
+ * DELETE /regions/:regionId/towns/:townId
+ */
+export async function deleteTown(regionId, townId) {
+  if (!regionId || !townId) throw new Error("regionId and townId required");
+  try {
+    const path = `/${encodeURIComponent(regionId)}/towns/${encodeURIComponent(
+      townId
+    )}`;
+    const res = await fetchJson(path, { method: "DELETE" });
+    return res;
+  } catch (err) {
+    console.error("deleteTown error:", err);
+    throw err;
+  }
+}
+
 /** Top-level awaited export so UI can import `locationsData` directly */
 export const locationsData = await getLocations();
 
@@ -226,6 +243,7 @@ export default {
   createRegion,
   addTown,
   updateTown,
+  deleteTown,
   mapLocationsResponse,
   locationsData,
 };
