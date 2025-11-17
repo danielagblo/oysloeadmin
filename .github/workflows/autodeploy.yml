@@ -16,9 +16,9 @@ jobs:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v0.1.4
         with:
-          host: 207.154.219.165
-          username: root
-          key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBy9yf/CY5NmjhvLts7FKH6ZObbxhcxi+icwvvcUmtuV root@oysloe-backend-prod
+          host: ${{ secrets.DROPLET_HOSTIP }}
+          username: ${{ secrets.DROPLET_USER }}
+          key:  ${{ secrets.DROPLET_KEY }}
           port: 22
           script: |
             cd oysloeadmin
