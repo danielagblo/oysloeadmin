@@ -1,8 +1,12 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import styles from "./applications.module.css";
 import { SearchIcon } from "../../components/SVGIcons/SearchIcon";
 import { Caret } from "../../components/SVGIcons/Caret";
-import { applicationsData } from "../../api/applications";
+import {
+  getApplications,
+  downloadDocument,
+  updateApplicationStatus,
+} from "../../api/applications";
 import ImageIcon from "../../components/SVGIcons/ImageIcon";
 import Download from "../../assets/downloadCopy.png";
 
@@ -64,13 +68,41 @@ function parseDateApplied(raw) {
   return isNaN(tryParse.getTime()) ? null : tryParse;
 }
 
+function formatDateForDisplay(dateString) {
+  if (!dateString) return "Unknown";
+
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "Invalid date";
+
+  const now = new Date();
+  const diffMs = now - date;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+  if (diffHours < 24) {
+    return `Today ${date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`;
+  } else if (diffDays === 1) {
+    return `Yesterday ${date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`;
+  } else if (diffDays < 7) {
+    return `${diffDays} days ago`;
+  } else if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7);
+    return `${weeks} week${weeks > 1 ? "s" : ""} ago`;
+  } else {
+    return date.toLocaleDateString();
+  }
+}
+
 function matchesTimePeriod(row, period) {
   if (!period || period === "All") return true;
 
-  const ts =
-    // prefer createdAt if set
-    row?.createdAt || row?.dateApplied || row?.appliedAt || null;
-
+  const ts = row?.dateApplied || row?.createdAt || row?.appliedAt || null;
   const rowDate = parseDateApplied(ts);
   if (!rowDate) return false;
 
@@ -97,10 +129,77 @@ function matchesTimePeriod(row, period) {
 }
 
 export const Applications = () => {
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
   const [rowData, setRowData] = useState(null);
   const [query, setQuery] = useState("");
   const [selectedTime, setSelectedTime] = useState("All");
   const [timeOpen, setTimeOpen] = useState(false);
+
+  // Fetch applications
+  const fetchApplications = async () => {
+    try {
+      setLoading(true);
+      const response = await getApplications();
+      setApplications(response.applications || []);
+    } catch (err) {
+      console.error("Failed to fetch applications:", err);
+      alert("Failed to load applications: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchApplications();
+  }, []);
+
+  // Handle document download
+  const handleDownload = async (applicationId, documentType = "resume") => {
+    try {
+      setActionLoading(true);
+      const result = await downloadDocument(applicationId, documentType);
+
+      if (result.downloadUrl) {
+        // Create a temporary link to trigger download
+        const link = document.createElement("a");
+        link.href = result.downloadUrl;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        alert("Download URL not available");
+      }
+    } catch (err) {
+      console.error("Download failed:", err);
+      alert("Failed to download document: " + err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Handle status update
+  const handleStatusUpdate = async (
+    applicationId,
+    status,
+    notes = "",
+    feedback = ""
+  ) => {
+    try {
+      setActionLoading(true);
+      await updateApplicationStatus(applicationId, status, notes, feedback);
+      await fetchApplications(); // Refresh data
+      alert("Application status updated successfully");
+    } catch (err) {
+      console.error("Status update failed:", err);
+      alert("Failed to update status: " + err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   // ensure your periods list — you can replace with constants or API-provided periods
   const periods = ["All", "Today", "Yesterday", "7 days", "1 month"];
@@ -108,19 +207,29 @@ export const Applications = () => {
   // filtering logic: search across name / email / phone / location / coverLetter
   const filtered = useMemo(() => {
     const q = (query || "").trim().toLowerCase();
-    return (applicationsData || []).filter((app) => {
+    return (applications || []).filter((app) => {
       // time filter
       if (!matchesTimePeriod(app, selectedTime)) return false;
 
       // search filter
       if (!q) return true;
-      const hay = [app?.name, app?.email, app?.phone, app?.location]
+      const hay = [
+        app?.name,
+        app?.email,
+        app?.phone,
+        app?.location,
+        app?.coverLetter,
+      ]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
       return hay.includes(q);
     });
-  }, [query, selectedTime]);
+  }, [applications, query, selectedTime]);
+
+  if (loading) {
+    return <div className={styles.loading}>Loading applications...</div>;
+  }
 
   return (
     <div className={styles.applicationsContainer}>
@@ -131,7 +240,7 @@ export const Applications = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             type="search"
-            placeholder="Search"
+            placeholder="Search by name, email, phone, location..."
           />
         </div>
 
@@ -160,14 +269,17 @@ export const Applications = () => {
         </div>
       </div>
 
-      <p className={styles.total}>~ {String(applicationsData.length)}</p>
+      <p className={styles.total}>~ {String(filtered.length)} applications</p>
 
       <div className={styles.table}>
         {(filtered || []).map((application, idx) => (
-          <div key={application.email ?? idx} className={styles.row}>
+          <div
+            key={application.id || application.email || idx}
+            className={styles.row}
+          >
             <img
               src={
-                application?.img ??
+                application?.img ||
                 `https://randomuser.me/api/portraits/lego/${idx}.jpg`
               }
               alt={application?.name}
@@ -186,11 +298,15 @@ export const Applications = () => {
             </button>
 
             <div className={styles.downloadAndTime}>
-              <button className={styles.download}>
+              <button
+                className={styles.download}
+                onClick={() => handleDownload(application.id, "resume")}
+                disabled={actionLoading}
+              >
                 <ImageIcon size={1.5} src={Download} />
-                <p>Download</p>
+                <p>{actionLoading ? "Downloading..." : "Download"}</p>
               </button>
-              <p>{application?.dateApplied ?? application?.createdAt ?? ""}</p>
+              <p>{formatDateForDisplay(application?.dateApplied)}</p>
             </div>
           </div>
         ))}
@@ -208,13 +324,46 @@ export const Applications = () => {
           />
 
           <div className={styles.modal} role="dialog" aria-modal="true">
-            <h1>Cover Letter</h1>
-            <p>Dated {rowData?.dateApplied ?? rowData?.createdAt}</p>
+            <h1>Cover Letter - {rowData?.name}</h1>
+            <p>Dated {formatDateForDisplay(rowData?.dateApplied)}</p>
             <textarea readOnly value={rowData?.coverLetter} />
             <div
-              style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 8,
+                marginTop: "1rem",
+              }}
             >
-              <button onClick={() => setRowData(null)}>Done</button>
+              <button
+                onClick={() =>
+                  handleStatusUpdate(
+                    rowData.id,
+                    "approved",
+                    "Cover letter reviewed",
+                    "Good fit for the role"
+                  )
+                }
+                disabled={actionLoading}
+                style={{ background: "#4CAF50", color: "white" }}
+              >
+                {actionLoading ? "Processing..." : "Approve"}
+              </button>
+              <button
+                onClick={() =>
+                  handleStatusUpdate(
+                    rowData.id,
+                    "rejected",
+                    "Cover letter reviewed",
+                    "Not a good fit"
+                  )
+                }
+                disabled={actionLoading}
+                style={{ background: "#f44336", color: "white" }}
+              >
+                {actionLoading ? "Processing..." : "Reject"}
+              </button>
+              <button onClick={() => setRowData(null)}>Close</button>
             </div>
           </div>
         </>
