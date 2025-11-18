@@ -1,8 +1,13 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import styles from "./ads.module.css";
 import { Caret } from "../../components/SVGIcons/Caret";
 import { SearchIcon } from "../../components/SVGIcons/SearchIcon";
-import { adsData } from "../../api/ads";
+import {
+  getAdsList,
+  updateAdStatus,
+  deleteAdImage,
+  getAdById,
+} from "../../api/ads";
 import { X } from "lucide-react";
 import { CheckMark } from "../../components/SVGIcons/CheckMark";
 import formatNumber, { timeAgo } from "../../utils/numConverters";
@@ -119,6 +124,11 @@ function formatKeyName(key) {
 
 /* ---------- component ---------- */
 export const Ads = () => {
+  // State for dynamic data
+  const [ads, setAds] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+
   // selected ad
   const [selectedRow, setSelectedRow] = useState(null);
 
@@ -148,30 +158,135 @@ export const Ads = () => {
   const [openAdType, setOpenAdType] = useState(false);
   const [openUsers, setOpenUsers] = useState(false);
 
-  // options derived from adsData
+  // Refs
+  const suspensionReasonRef = useRef(null);
+
+  // Fetch ads data
+  const fetchAds = async () => {
+    try {
+      setLoading(true);
+      const response = await getAdsList();
+      setAds(response.items || []);
+    } catch (err) {
+      console.error("Failed to fetch ads:", err);
+      alert("Failed to load ads: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAds();
+  }, []);
+
+  // API Handlers
+  const handleSuspendAd = async (adId, reason) => {
+    try {
+      setActionLoading(true);
+      await updateAdStatus(adId, {
+        status: "suspended",
+        reason: reason || "Manual suspension by admin",
+      });
+      await fetchAds(); // Refresh data
+      alert("Ad suspended successfully");
+    } catch (err) {
+      console.error("Failed to suspend ad:", err);
+      alert("Failed to suspend ad: " + err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleActivateAd = async (adId) => {
+    try {
+      setActionLoading(true);
+      await updateAdStatus(adId, { status: "active" });
+      await fetchAds(); // Refresh data
+      alert("Ad activated successfully");
+    } catch (err) {
+      console.error("Failed to activate ad:", err);
+      alert("Failed to activate ad: " + err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeleteAd = async (adId) => {
+    if (!confirm("Are you sure you want to delete this ad?")) return;
+
+    try {
+      setActionLoading(true);
+      await updateAdStatus(adId, { status: "deleted" });
+      setSelectedRow(null);
+      await fetchAds(); // Refresh data
+      alert("Ad deleted successfully");
+    } catch (err) {
+      console.error("Failed to delete ad:", err);
+      alert("Failed to delete ad: " + err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeleteImage = async (adId, imageIndex) => {
+    try {
+      const imageUrl = selectedRow.images[imageIndex];
+      // Extract image ID from URL or use the URL itself
+      const imageId = imageUrl.split("/").pop() || imageUrl;
+
+      await deleteAdImage(adId, imageId, {
+        reason: "Removed by admin",
+      });
+
+      // Update local state
+      setSelectedRow((prev) => ({
+        ...prev,
+        images: prev.images.filter((_, idx) => idx !== imageIndex),
+      }));
+
+      // Also update in the main ads list
+      setAds((prev) =>
+        prev.map((ad) =>
+          ad.id === adId
+            ? {
+                ...ad,
+                images: ad.images.filter((_, idx) => idx !== imageIndex),
+              }
+            : ad
+        )
+      );
+
+      alert("Image deleted successfully");
+    } catch (err) {
+      console.error("Failed to delete image:", err);
+      alert("Failed to delete image: " + err.message);
+    }
+  };
+
+  // options derived from ads data
   const statusOptions = useMemo(
     () => ["All", "Active", "Pending", "Suspended"],
     []
   );
   const promoOptions = useMemo(() => {
     const set = new Set(["Basic", "Premium", "Business"]);
-    (adsData || []).forEach(
+    (ads || []).forEach(
       (a) => a.subscriptionPlan && set.add(a.subscriptionPlan)
     );
     return ["All", ...Array.from(set)];
-  }, []);
+  }, [ads]);
 
   const adTypeOptions = useMemo(() => {
     const set = new Set(["Sale", "Pay Later", "Rent"]);
-    (adsData || []).forEach((a) => a.adPurpose && set.add(a.adPurpose));
+    (ads || []).forEach((a) => a.adPurpose && set.add(a.adPurpose));
     return ["All", ...Array.from(set)];
-  }, []);
+  }, [ads]);
 
   const userOptions = useMemo(() => {
     const set = new Set();
-    (adsData || []).forEach((a) => a.seller?.name && set.add(a.seller.name));
+    (ads || []).forEach((a) => a.seller?.name && set.add(a.seller.name));
     return ["All", ...Array.from(set)];
-  }, []);
+  }, [ads]);
 
   // filter userOptions by the user-search input (so the dropdown list is searchable)
   const filteredUserOptions = useMemo(() => {
@@ -187,13 +302,13 @@ export const Ads = () => {
 
   // precompute searchable text and thumbnail once
   const dataWithSearch = useMemo(() => {
-    return (adsData || []).map((ad) => ({
+    return (ads || []).map((ad) => ({
       ...ad,
       _searchText: buildSearchableText(ad),
       _thumbnail:
         Array.isArray(ad.images) && ad.images.length ? ad.images[0] : null,
     }));
-  }, []);
+  }, [ads]);
 
   // combined filters (global search + dropdowns)
   const filteredData = useMemo(() => {
@@ -225,7 +340,6 @@ export const Ads = () => {
           return false;
       }
 
-      setSelectedRow(null);
       return true;
     });
   }, [
@@ -237,12 +351,8 @@ export const Ads = () => {
     selectedUser,
   ]);
 
-  const [images, setImages] = useState(selectedRow?.images);
-
-  const deleteImages = (id) => {
-    setImages((prev) => {
-      return prev?.filter((img, idx) => idx !== id);
-    });
+  const deleteImages = (imageIndex) => {
+    handleDeleteImage(selectedRow.id, imageIndex);
   };
 
   // Dropdown component: allowSearch toggles user search input
@@ -341,8 +451,9 @@ export const Ads = () => {
     );
   };
 
-  // debug
-  // useEffect(() => { console.log("filteredData length", filteredData.length); }, [filteredData]);
+  if (loading) {
+    return <div className={styles.loading}>Loading ads...</div>;
+  }
 
   return (
     <div className={styles.adsContainer}>
@@ -405,7 +516,6 @@ export const Ads = () => {
                 className={styles.adRow}
                 onClick={() => {
                   setSelectedRow(ad);
-                  setImages(ad?.images);
                 }}
               >
                 <div className={styles.adInfo}>
@@ -497,7 +607,7 @@ export const Ads = () => {
             </ul>
 
             <ul className={styles.images}>
-              {images?.map((image, idx) => (
+              {selectedRow?.images?.map((image, idx) => (
                 <li className={styles.image} key={idx}>
                   <img
                     src={image}
@@ -505,7 +615,10 @@ export const Ads = () => {
                     alt={`ad-${idx}`}
                   />
                   <span className={styles.delIcon}>
-                    <button onClick={() => deleteImages(idx)}>
+                    <button
+                      onClick={() => deleteImages(idx)}
+                      disabled={actionLoading}
+                    >
                       <ImageIcon src={TrashIcon} size={1.5} alt="Ads Icon" />
                     </button>
                   </span>
@@ -523,28 +636,41 @@ export const Ads = () => {
               <div className={styles.buttonRack}>
                 <div className={styles.suspensionRack}>
                   <textarea
+                    ref={suspensionReasonRef}
                     className={styles.explainSuspension}
                     placeholder="Type reason for suspension"
                   />
                   <button
                     className={`${styles.statusButton} ${styles.suspend}`}
+                    onClick={() =>
+                      handleSuspendAd(
+                        selectedRow.id,
+                        suspensionReasonRef.current?.value
+                      )
+                    }
+                    disabled={actionLoading}
                   >
-                    Suspend
+                    {actionLoading ? "Suspending..." : "Suspend"}
                   </button>
                   {selectedRow?.status === "Pending" && (
                     <button
-                      disabled={!selectedRow?.verified}
+                      disabled={!selectedRow?.verified || actionLoading}
                       className={`${styles.statusButton} ${styles.activate}`}
+                      onClick={() => handleActivateAd(selectedRow.id)}
                     >
-                      Activate Ad
+                      {actionLoading ? "Activating..." : "Activate Ad"}
                     </button>
                   )}
                 </div>
               </div>
             ) : (
               // Add the delete ad functionality
-              <button className={`${styles.statusButton} ${styles.delete}`}>
-                Delete Ad
+              <button
+                className={`${styles.statusButton} ${styles.delete}`}
+                onClick={() => handleDeleteAd(selectedRow.id)}
+                disabled={actionLoading}
+              >
+                {actionLoading ? "Deleting..." : "Delete Ad"}
               </button>
             )}
           </div>
@@ -554,10 +680,11 @@ export const Ads = () => {
             <input
               type="text"
               defaultValue={`${selectedRow?.productCategory?.category} → ${selectedRow?.productCategory?.subcategory}`}
+              readOnly
             />
 
             <label>Title</label>
-            <input type="text" defaultValue={selectedRow?.title} />
+            <input type="text" defaultValue={selectedRow?.title} readOnly />
 
             <label>Ad Purpose</label>
             <div className={styles.adPurposeBox}>
@@ -566,6 +693,7 @@ export const Ads = () => {
                   <input
                     type="radio"
                     defaultChecked={selectedRow?.adPurpose === "Sale"}
+                    readOnly
                   />
                 </div>
                 <label>Sale</label>
@@ -575,6 +703,7 @@ export const Ads = () => {
                   <input
                     type="radio"
                     defaultChecked={selectedRow?.adPurpose === "Pay Later"}
+                    readOnly
                   />
                 </div>
                 <label>Pay Later</label>
@@ -584,6 +713,7 @@ export const Ads = () => {
                   <input
                     type="radio"
                     defaultChecked={selectedRow?.adPurpose === "Rent"}
+                    readOnly
                   />
                 </div>
                 <label>Rent</label>
@@ -594,16 +724,19 @@ export const Ads = () => {
             <input
               type="text"
               defaultValue={selectedRow?.price ? `₵ ${selectedRow.price}` : ""}
+              readOnly
             />
             <input
               type="text"
               defaultValue={`${selectedRow?.location?.city || ""}, ${
                 selectedRow?.location?.area || ""
               }`}
+              readOnly
             />
             <input
               type="text"
               defaultValue={selectedRow?.location?.street || ""}
+              readOnly
             />
 
             <label>Key Features</label>
@@ -612,6 +745,7 @@ export const Ads = () => {
                 type="text"
                 defaultValue={`${attribute?.name}: ${attribute?.value}`}
                 key={idx}
+                readOnly
               />
             ))}
 
@@ -620,11 +754,12 @@ export const Ads = () => {
                 type="text"
                 defaultValue={`${parameter?.name}: ${parameter?.value}`}
                 key={idx}
+                readOnly
               />
             ))}
 
             <label>Condition</label>
-            <input type="text" defaultValue={selectedRow?.condition} />
+            <input type="text" defaultValue={selectedRow?.condition} readOnly />
           </div>
 
           <div className={styles.adDetails}>
