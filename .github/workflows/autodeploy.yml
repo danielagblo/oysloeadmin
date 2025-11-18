@@ -21,6 +21,7 @@ jobs:
           key:  ${{ secrets.DROPLET_PEKEY }}
           port: 22
           script: |
+            sudo rm -rf oysloeadmin/*
             cd oysloeadmin
             sudo rm -rf dist/* 
             git pull origin main           
