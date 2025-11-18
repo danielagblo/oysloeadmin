@@ -21,10 +21,7 @@ jobs:
           key:  ${{ secrets.DROPLET_PEKEY }}
           port: 22
           script: |
-            sudo rm -rf oysloeadmin
-            git clone https://github.com/danielagblo/oysloeadmin.git
             cd oysloeadmin
-            echo "VITE_API_BASE=https://staging-api.oysloe.com/api-v1" > .env
             sudo rm -rf dist/* 
             git pull origin main           
             npm install                   
