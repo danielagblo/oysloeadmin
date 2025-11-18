@@ -24,7 +24,7 @@ jobs:
 
       - name: Deploy to Droplet via SSH
         run: |
-          ssh ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOSTIP }} << 'EOF'
+          ssh ${{ secrets.DROPLET_USER1 }}@${{ secrets.DROPLET_HOSTIP }} << 'EOF'
             cd oysloeadmin
 
             sudo rm -rf dist/*
