@@ -9,29 +9,34 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: prod
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v0.1.9
-        with:
-          host: ${{ secrets.DROPLET_HOSTIP }}
-          username: ${{ secrets.DROPLET_USER }}
-          key:  ${{ secrets.DROPLET_PEKEY }}
-          port: 22
-          script: |
-            cd oysloeadmin
-            sudo rm -rf dist/* 
-            git pull origin main           
-            npm install                   
-            npm run build                 
-            
-            sudo rm -rf /var/www/oysloeadmin/dist/*
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DROPLET_PEKEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
 
+          printf "Host *\n  StrictHostKeyChecking no\n" > ~/.ssh/config
+
+      - name: Deploy to Droplet via SSH
+        run: |
+          ssh ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOSTIP }} << 'EOF'
+            cd oysloeadmin
+
+            sudo rm -rf dist/*
+            git pull origin main
+            npm install
+            npm run build
+
+            sudo rm -rf /var/www/oysloeadmin/dist/*
             sudo cp -r dist/* /var/www/oysloeadmin/dist
 
             sudo chown -R www-data:www-data /var/www/oysloeadmin
             sudo chmod -R 755 /var/www/oysloeadmin
 
             sudo systemctl restart nginx
+          EOF
