@@ -10,6 +10,7 @@ import {
   createAdminFunc,
   getUserStats,
 } from "../../api/users";
+import { uploadAdminProfileImage } from "../../api/upload";
 import formatNumber from "../../utils/numConverters";
 import { timeAgo } from "../../utils/numConverters";
 import { Caret } from "../../components/SVGIcons/Caret";
@@ -60,14 +61,15 @@ export const Users = () => {
     username: "",
     passkey: "",
     roleIsStaff: true,
-    profileDataUrl: "",
+    profileFile: null,
+    profilePreviewUrl: "",
   });
 
   // Fetch users and stats
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await getUsers({ limit: 1000 }); // Get all users for now
+      const response = await getUsers({ limit: 1000 });
       setUsers(response.users || []);
     } catch (err) {
       console.error("Failed to fetch users:", err);
@@ -91,6 +93,15 @@ export const Users = () => {
     fetchStats();
   }, []);
 
+  // Cleanup effect for preview URLs
+  useEffect(() => {
+    return () => {
+      if (createAdminForm.profilePreviewUrl) {
+        URL.revokeObjectURL(createAdminForm.profilePreviewUrl);
+      }
+    };
+  }, [createAdminForm.profilePreviewUrl]);
+
   // Debounce search
   useEffect(() => {
     const id = setTimeout(() => setDebouncedSearch(searchInput.trim()), 300);
@@ -102,9 +113,8 @@ export const Users = () => {
     try {
       setActionLoading(true);
       await verifyUser(userId, status, notes);
-      await fetchUsers(); // Refresh data
+      await fetchUsers();
 
-      // Update selected user if it's the current one
       if (selectedUser && selectedUser.id === userId) {
         const updatedUser = await getUser(userId);
         setSelectedUser(updatedUser);
@@ -193,7 +203,7 @@ export const Users = () => {
     try {
       setActionLoading(true);
       await createAdminFunc(adminData);
-      await fetchUsers(); // Refresh to see the new admin
+      await fetchUsers();
       alert("Admin created successfully");
       return true;
     } catch (err) {
@@ -213,13 +223,13 @@ export const Users = () => {
     } catch (err) {
       console.error("Failed to load user details:", err);
       alert("Failed to load user details: " + err.message);
-      setSelectedUser(user); // Fallback to basic user data
+      setSelectedUser(user);
     } finally {
       setActionLoading(false);
     }
   };
 
-  // Filtering logic (same as before but with API data)
+  // Filtering logic
   const statusOptions = ["all", "verified", "unverified"];
   const promoOptions = ["all", "premium", "business", "basic"];
   const adTypeOptions = [
@@ -297,11 +307,18 @@ export const Users = () => {
 
   const handleProfileFileChange = (file) => {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setCreateAdminForm((p) => ({ ...p, profileDataUrl: e.target.result }));
-    };
-    reader.readAsDataURL(file);
+
+    // Clean up previous preview URL
+    if (createAdminForm.profilePreviewUrl) {
+      URL.revokeObjectURL(createAdminForm.profilePreviewUrl);
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setCreateAdminForm((p) => ({
+      ...p,
+      profileFile: file,
+      profilePreviewUrl: previewUrl,
+    }));
   };
 
   const onCreateAdminFile = (e) => {
@@ -315,27 +332,77 @@ export const Users = () => {
       return;
     }
 
-    const success = await handleCreateAdmin({
-      name: createAdminForm.name.trim(),
-      username: createAdminForm.username.trim(),
-      passkey: createAdminForm.passkey.trim(),
-      role: createAdminForm.roleIsStaff ? "staff" : "admin",
-      profileDataUrl: createAdminForm.profileDataUrl || "",
-    });
+    try {
+      setActionLoading(true);
 
-    if (success) {
-      setCreateAdminForm({
-        name: "",
-        username: "",
-        passkey: "",
-        roleIsStaff: true,
-        profileDataUrl: "",
-      });
-      setCreateAdmin(false);
+      let profileImageUrl = "";
+
+      if (createAdminForm.profileFile) {
+        try {
+          profileImageUrl = await uploadAdminProfileImage(
+            createAdminForm.profileFile
+          );
+          console.log("Profile image uploaded:", profileImageUrl);
+        } catch (uploadError) {
+          console.error("Failed to upload profile image:", uploadError);
+          alert(
+            "Failed to upload profile image. Creating admin without image."
+          );
+        }
+      }
+
+      const adminData = {
+        name: createAdminForm.name.trim(),
+        username: createAdminForm.username.trim(),
+        passkey: createAdminForm.passkey.trim(),
+        role: createAdminForm.roleIsStaff ? "staff" : "admin",
+        profileImageUrl: profileImageUrl,
+      };
+
+      const success = await handleCreateAdmin(adminData);
+
+      if (success) {
+        // Clean up preview URL
+        if (createAdminForm.profilePreviewUrl) {
+          URL.revokeObjectURL(createAdminForm.profilePreviewUrl);
+        }
+
+        setCreateAdminForm({
+          name: "",
+          username: "",
+          passkey: "",
+          roleIsStaff: true,
+          profileFile: null,
+          profilePreviewUrl: "",
+        });
+        setCreateAdmin(false);
+      }
+    } catch (error) {
+      console.error("Error in handleAddAdmin:", error);
+      alert("Failed to create admin: " + error.message);
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  // Dropdown component (keep existing structure)
+  const handleCancelAdmin = () => {
+    // Clean up preview URL
+    if (createAdminForm.profilePreviewUrl) {
+      URL.revokeObjectURL(createAdminForm.profilePreviewUrl);
+    }
+
+    setCreateAdminForm({
+      name: "",
+      username: "",
+      passkey: "",
+      roleIsStaff: true,
+      profileFile: null,
+      profilePreviewUrl: "",
+    });
+    setCreateAdmin(false);
+  };
+
+  // Dropdown component
   const Dropdown = ({
     label,
     useDefault = false,
@@ -567,7 +634,6 @@ export const Users = () => {
       <div className={styles.content}>
         {selectedUser ? (
           <div className={styles.userInfo}>
-            {/* User details UI remains the same but uses API data */}
             <div className={styles.userColumn}>
               <div className={styles.profileImages}>
                 <div className={styles.profileImage}>
@@ -665,7 +731,6 @@ export const Users = () => {
             </div>
 
             <div className={styles.userColumn}>
-              {/* Reviews section remains the same */}
               <div className={styles.reviewsBox}>
                 <div className={styles.reviewColumn}>
                   <h1>
@@ -808,9 +873,9 @@ export const Users = () => {
                   onClick={() => fileInputRef.current?.click()}
                   className={styles.profilePicButton}
                 >
-                  {createAdminForm.profileDataUrl ? (
+                  {createAdminForm.profilePreviewUrl ? (
                     <img
-                      src={createAdminForm.profileDataUrl}
+                      src={createAdminForm.profilePreviewUrl}
                       alt="preview"
                       className={styles.uploadedProfilePic}
                     />
@@ -900,16 +965,7 @@ export const Users = () => {
                   </button>
 
                   <button
-                    onClick={() => {
-                      setCreateAdminForm({
-                        name: "",
-                        username: "",
-                        passkey: "",
-                        roleIsStaff: true,
-                        profileDataUrl: "",
-                      });
-                      setCreateAdmin(false);
-                    }}
+                    onClick={handleCancelAdmin}
                     className={styles.cancelButton}
                   >
                     Cancel
